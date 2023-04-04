@@ -2,8 +2,17 @@ import './App.css';
 import { useState, useEffect } from 'react';
 import { ethers } from "ethers";
 
+import Navigation from './components/Navigation/Navigation';
+import Dashboard from './components/Dashboard/Dashboard';
+
 function App() {
-  const [wallet, setWallet] = useState({});
+  const [wallet, setWallet] = useState({
+    balance: "0",
+    balanceUnit: "MATIC",
+    address: ""
+  });
+
+  const [provider, setProvider] = useState(null);
 
   async function connectAccount() {
     if (window.ethereum) {
@@ -16,7 +25,8 @@ function App() {
         const weiBalance = await provider.getBalance(address);
         const balance = ethers.formatEther(weiBalance);
 
-        setWallet({address, balance});
+        setWallet((prev) => ({...prev, address, balance}));
+        setProvider(provider);
       } catch (err) {
         console.error(err);
       }
@@ -27,13 +37,10 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        { wallet.address ?
-          <p>Connected to { wallet.address } ({wallet.balance} MATIC)</p>
-          :
-          <button onClick={connectAccount} >Connect</button>
-        }
-      </header>
+      <>
+        <Navigation address={wallet.address} balance={wallet.balance} balanceUnit={wallet.balanceUnit} connectAccount={connectAccount} />
+        <Dashboard provider={provider} />
+      </>
     </div>
   );
 }
