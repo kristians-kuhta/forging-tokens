@@ -14,13 +14,11 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   const MIN_TOKEN_ID = 0;
   const MAX_TOKEN_ID = 7;
 
-  const buildToken = async (id) => {
+  const buildToken = async (id, tokenURI) => {
     let data = {id};
-    if (!contracts.Item) { return data; }
+    if (!tokenURI) { return data; }
 
-    const uri = await contracts.Item.uri(id);
-
-    const ipfsURL = uri.replace('ipfs://', IPFS_GATEWAY_PREFIX).
+    const ipfsURL = tokenURI.replace('ipfs://', IPFS_GATEWAY_PREFIX).
       replace('{id}', id);
     data.url = ipfsURL;
     const tokenData = (await axios.get(ipfsURL)).data;
@@ -41,16 +39,19 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   }
 
   useEffect(() => {
+    if (!contracts || !contracts.Item) {
+      return;
+    }
     (async () => {
+      const tokenURI = await contracts.Item['uri()']();
       const items = []
       for(let tokenId = MIN_TOKEN_ID; tokenId <= MAX_TOKEN_ID; tokenId++) {
-        const token = await buildToken(tokenId);
-
+        const token = await buildToken(tokenId, tokenURI);
         items.push(token);
       }
       setCollection(items);
     })();
-  }, [contracts]);
+  }, [contracts, contracts.Item]);
 
   const handleMint = async (tokenId) => {
     try {
@@ -80,7 +81,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   } else if (isCorrectChain) {
     return <>
       { errorMessage && <ErrorMessage text={errorMessage}/> }
-      <Tokens walletAddress={walletAddress} contracts={contracts} handleMint={handleMint} collection={collection} />;
+      <Tokens walletAddress={walletAddress} contracts={contracts} handleMint={handleMint} collection={collection} />
     </>;
   } else {
     return <p>Please, switch to Polygon Mumbai testnet to use the app!</p>;
