@@ -5,8 +5,17 @@ import { ethers } from "ethers";
 import Navigation from './components/Navigation/Navigation';
 import Dashboard from './components/Dashboard/Dashboard';
 
-// Polygon Mumbai testnet
-const CHAIN_ID = "80001";
+// address generated from the deploy script
+import addresses from "./contracts/contract-address.json";
+
+// artifacts generated from the deploy script
+import ForgeArtifact from "./contracts/Forge.json";
+import ItemArtifact from "./contracts/Item.json";
+
+// Polygon Mumbai testnet or hardhat node (development)
+const CHAIN_ID =
+  (!process.env.NODE_ENV || process.env.NODE_ENV != 'production') ?
+    '31337' : '80001';
 
 function App() {
   const [wallet, setWallet] = useState({
@@ -17,21 +26,40 @@ function App() {
   });
 
   const [provider, setProvider] = useState(null);
+  const [contracts, setContracts] = useState([]);
 
   async function connectAccount() {
     if (window.ethereum) {
       try {
-        const accounts = await window.ethereum.request({
+        const [address] = await window.ethereum.request({
           method: "eth_requestAccounts"
         });
-        const address = accounts[0];
         const provider = new ethers.BrowserProvider(window.ethereum)
+
         const weiBalance = await provider.getBalance(address);
         const balance = ethers.formatEther(weiBalance);
+
         const { chainId } = await provider.getNetwork();
 
         setWallet((prev) => ({...prev, address, balance, chainId}));
         setProvider(provider);
+
+        const forge = new ethers.Contract(
+          addresses.Forge,
+          ForgeArtifact.abi,
+          await provider.getSigner(0)
+        );
+
+        const item = new ethers.Contract(
+          addresses.Item,
+          ItemArtifact.abi,
+          await provider.getSigner(0)
+        );
+
+        setContracts({
+          Forge: forge,
+          Item: item
+        });
       } catch (err) {
         console.error(err);
       }
@@ -50,7 +78,12 @@ function App() {
     <div className="App">
       <>
         <Navigation address={wallet.address} balance={wallet.balance} balanceUnit={wallet.balanceUnit} connectAccount={connectAccount} />
-        <Dashboard provider={provider} isCorrectChain={wallet.chainId == CHAIN_ID } />
+        <Dashboard
+          walletAddress={wallet.address}
+          provider={provider}
+          isCorrectChain={wallet.chainId == CHAIN_ID }
+          contracts={contracts}
+        />
       </>
     </div>
   );
