@@ -10,7 +10,7 @@ contract Forge {
 
   error TokenIdCannotBeMinted();
   error TokensCannotBeForged();
-  error AddressOnMintCooldown();
+  error AddressOnMintCooldown(uint256 remainingSeconds);
   error TokenCannotBeBurned();
   error NotOwnerOfToken();
 
@@ -70,14 +70,9 @@ contract Forge {
     }
   }
 
-  function _checkTokenCanBeBurned(uint256 _tokenId) internal {
-    _checkTokenOwnership();
-    _checkTokenIdBurnable();
-  }
-
-  function _checkAddressOnMintCooldown() {
-    if (lastMinted[msg.sender] == 0 || lastMinted[msg.sender] > block.timestamp - MINT_COOLDOWN) {
-      revert AddressOnMintCooldown();
+  function _checkAddressOnMintCooldown() internal view {
+    if (lastMint[msg.sender] != 0 && lastMint[msg.sender] > block.timestamp - MINT_COOLDOWN) {
+      revert AddressOnMintCooldown((lastMint[msg.sender] + MINT_COOLDOWN) - block.timestamp);
     }
   }
 
