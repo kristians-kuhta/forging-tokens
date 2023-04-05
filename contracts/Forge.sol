@@ -12,7 +12,6 @@ contract Forge {
   error TokensCannotBeForged();
   error AddressOnMintCooldown(uint256 remainingSeconds);
   error TokenCannotBeBurned();
-  error NotOwnerOfToken();
 
   mapping(address => uint256) public lastMint;
 
@@ -31,40 +30,35 @@ contract Forge {
     _forgeTwo(_tokenId1, _tokenId2);
   }
 
-  function forgeThree(uint256 _tokenId1, uint256 _tokenId2) public
+  function forgeThree(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) public
   {
     _checkThreeTokensCanBeForged(_tokenId1, _tokenId2, _tokenId3);
-    _forgeThree(_tokenId1, _tokenId2);
+    _forgeThree(_tokenId1, _tokenId2, _tokenId3);
   }
 
   function mint(uint256 _tokenId) public {
     _checkTokenCanBeMinted(_tokenId);
     _checkAddressOnMintCooldown();
-    item.mint(_tokendId);
+    lastMint[msg.sender] = block.timestamp;
+    item.mint(_tokenId, msg.sender);
   }
 
-  function burn(uint256 _tokenId) public {
+  function burnOne(uint256 _tokenId) public {
     _checkTokenCanBeBurned(_tokenId);
-    item.burn();
+    item.burn(msg.sender, _tokenId, 1);
   }
 
   //
   //  Internal functions
   //
 
-  function _checkTokenCanBeMinted(uint256 _tokenId) internal {
-    if (_tokenId <= 2) {
+  function _checkTokenCanBeMinted(uint256 _tokenId) internal pure {
+    if (_tokenId > 2) {
       revert TokenIdCannotBeMinted();
     }
   }
 
-  function _checkTokenOwnership(uint256 _tokenId) internal {
-    if (item.ownerOf(_tokenId) != msg.sender) {
-      revert NotOwnerOfToken();
-    }
-  }
-
-  function _checkTokenCanBeBurned(uint256 _tokenId) internal {
+  function _checkTokenCanBeBurned(uint256 _tokenId) internal view {
     if (_tokenId < 4 || _tokenId > 6) {
       revert TokenCannotBeBurned();
     }
@@ -76,29 +70,29 @@ contract Forge {
     }
   }
 
-  function _checkTwoTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2) internal returns(bool) {
-    if (_twoTokensCanBeForged(_tokenId1, _tokenId2) {
+  function _checkTwoTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2) internal pure {
+    if (_twoTokensCanBeForged(_tokenId1, _tokenId2)) {
       revert TokensCannotBeForged();
     }
   }
 
-  function _checkThreeTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2) internal returns(bool) {
-    if (_threeTokensCanBeForged(_tokenId1, _tokenId2) {
+  function _checkThreeTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) internal pure {
+    if (_threeTokensCanBeForged(_tokenId1, _tokenId2, _tokenId3)) {
       revert TokensCannotBeForged();
     }
   }
 
-  function _twoTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2) internal returns(bool) {
+  function _twoTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2) internal pure returns(bool) {
     return (_tokenId1 == 0 && _tokenId2 == 1) ||
       (_tokenId1 == 1 && _tokenId2 == 2) ||
       (_tokenId1 == 0 && _tokenId2 == 2);
   }
 
-  function _threeTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) internal returns(bool) {
+  function _threeTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) internal pure returns(bool) {
     return _tokenId1 == 0 && _tokenId2 == 1 && _tokenId3 == 2;
   }
 
-  function _mintedTokenIdFromTwo(uint256 _tokenId1, uint256 _tokenId2) internal {
+  function _mintedTokenIdFromTwo(uint256 _tokenId1, uint256 _tokenId2) internal pure returns(uint256) {
     if (_tokenId1 == 0 && _tokenId2 == 1) {
       return 3;
     } else if (_tokenId1 == 1 && _tokenId2 == 2) {
@@ -106,20 +100,23 @@ contract Forge {
     } else if (_tokenId1 == 0 && _tokenId2 == 2) {
       return 5;
     }
+
+    return 777; // Default case, never going to happen
   }
 
   function _forgeTwo(uint256 _tokenId1, uint256 _tokenId2) internal {
     uint256 mintedTokenId = _mintedTokenIdFromTwo(_tokenId1, _tokenId2);
-    token.mint(mintedTokenId, msg.sender);
+    item.mint(mintedTokenId, msg.sender);
 
-    uint256[2] tokenIds = [_tokenId1, _tokenId2];
-    token.burn(tokenIDs);
+    item.burn(msg.sender, _tokenId1, 1);
+    item.burn(msg.sender, _tokenId2, 1);
   }
 
   function _forgeThree(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) internal {
-    token.mint(6, msg.sender);
+    item.mint(6, msg.sender);
 
-    uint256[2] tokenIds = [_tokenId1, _tokenId2, _tokenId3];
-    token.burn(tokenIDs);
+    item.burn(msg.sender, _tokenId1, 1);
+    item.burn(msg.sender, _tokenId2, 1);
+    item.burn(msg.sender, _tokenId3, 1);
   }
 }
