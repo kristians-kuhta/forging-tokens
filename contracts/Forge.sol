@@ -48,9 +48,16 @@ contract Forge {
     item.burn(msg.sender, _tokenId, 1);
   }
 
+  function mintCooldown() public view returns (bool) {
+    return _addressOnMintCooldown(msg.sender);
+  }
   //
   //  Internal functions
   //
+
+  function _addressOnMintCooldown(address _account) internal view returns (bool) {
+    return lastMint[_account] != 0 && lastMint[_account] > block.timestamp - MINT_COOLDOWN;
+  }
 
   function _checkTokenCanBeMinted(uint256 _tokenId) internal pure {
     if (_tokenId > 2) {
@@ -65,7 +72,7 @@ contract Forge {
   }
 
   function _checkAddressOnMintCooldown() internal view {
-    if (lastMint[msg.sender] != 0 && lastMint[msg.sender] > block.timestamp - MINT_COOLDOWN) {
+    if (_addressOnMintCooldown(msg.sender)) {
       revert AddressOnMintCooldown((lastMint[msg.sender] + MINT_COOLDOWN) - block.timestamp);
     }
   }
