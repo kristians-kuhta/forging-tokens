@@ -31,6 +31,10 @@ contract Forge {
       (_tokenId == 6 && _hasBalanceForToken6Forging());
   }
 
+  function canBurnToken(uint256 _tokenId) public view returns (bool) {
+    return (_tokenId > 3 && _tokenId <= 6 && item.balanceOf(msg.sender, _tokenId) > 0);
+  }
+
   function forge(uint256 _tokenId) public
   {
     _checkCanForgeToken(_tokenId);
@@ -44,7 +48,7 @@ contract Forge {
     item.mint(_tokenId, msg.sender);
   }
 
-  function burnOne(uint256 _tokenId) public {
+  function burn(uint256 _tokenId) public {
     _checkTokenCanBeBurned(_tokenId);
     item.burn(msg.sender, _tokenId, 1);
   }
