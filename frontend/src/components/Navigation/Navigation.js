@@ -1,7 +1,4 @@
-// import { useState, useEffect } from 'react';
-// import { ethers } from "ethers";
-
-import { Nav, Navbar, Container, Button } from 'react-bootstrap';
+import { Navbar, Container, Button } from 'react-bootstrap';
 
 function Navigation({address, balance, balanceUnit, connectAccount}) {
   function connectedWallet() {

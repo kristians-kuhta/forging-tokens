@@ -10,7 +10,9 @@ const IPFS_GATEWAY_PREFIX = 'https://forge-token.infura-ipfs.io/ipfs/';
 function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   const [errorMessage, setErrorMessage] = useState(null);
   const [collection, setCollection] = useState([]);
-  const [mintAllowed, setMintAllowed] = useState(true);
+
+  const [mintCooldown, setMintCooldown] = useState(false);
+  const [minting, setMinting] = useState(false);
 
   const MIN_TOKEN_ID = 0;
   const MAX_TOKEN_ID = 7;
@@ -43,17 +45,17 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
 
     try {
       contracts.Forge.mintCooldown().then(cooldownActive => {
-        setMintAllowed(!cooldownActive);
+        setMintCooldown(cooldownActive);
       });
+
     } catch (error) {
       handleError(error);
     }
-  }, [setMintAllowed, contracts.Forge]);
+  }, [setMintCooldown, contracts.Forge]);
 
   useEffect(() => {
-    if (!contracts || !contracts.Item) {
-      return;
-    }
+    if (!contracts || !contracts.Item) { return; }
+
     (async () => {
       const tokenURI = await contracts.Item['uri()']();
       const items = []
@@ -75,10 +77,15 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
 
   const handleMint = async (tokenId) => {
     try {
+      setMinting(true);
+
       const tx = await contracts.Forge.mint(tokenId);
       await tx.wait();
+
+      setMinting(false);
+      setMintCooldown(true);
+
       const newBalance = await contracts.Item.balanceOf(walletAddress, tokenId);
-      setMintAllowed(false);
       setCollection(prev => {
         let token = prev.filter((item) => item.id === tokenId)[0];
         if (!token) {
@@ -100,12 +107,11 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     return <>
       { errorMessage && <ErrorMessage text={errorMessage}/> }
       <Tokens
-        walletAddress={walletAddress}
-        contracts={contracts}
-        mintAllowed={mintAllowed}
-        setMintAllowed={setMintAllowed}
-        handleMint={handleMint}
         collection={collection}
+        handleMint={handleMint}
+        mintCooldown={mintCooldown}
+        minting={minting}
+        setMintCooldown={setMintCooldown}
       />
     </>;
   } else {

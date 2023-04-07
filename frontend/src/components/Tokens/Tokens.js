@@ -1,12 +1,11 @@
 import Token from '../Token/Token';
 
 function Tokens({
-  walletAddress,
-  contracts,
-  handleMint,
   collection,
-  mintAllowed,
-  setMintAllowed
+  handleMint,
+  mintCooldown,
+  minting,
+  setMintCooldown
 }) {
   return <ul>
     { collection.map((token) => {
@@ -14,12 +13,13 @@ function Tokens({
           key={`token-${token.id}`}
           id={token.id}
           name={token.name}
+          description={token.description}
           image={token.image}
           balance={token.balance}
           mintable={token.id < 3}
-          mintAllowed={mintAllowed}
-          setMintAllowed={setMintAllowed}
-          description={token.description}
+          mintCooldown={mintCooldown}
+          minting={minting}
+          setMintCooldown={setMintCooldown}
           handleMint={handleMint}
         />
       })

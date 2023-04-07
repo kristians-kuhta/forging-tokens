@@ -34,10 +34,10 @@ function App() {
         const [address] = await window.ethereum.request({
           method: "eth_requestAccounts"
         });
-        const provider = new ethers.BrowserProvider(window.ethereum)
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
 
         const weiBalance = await provider.getBalance(address);
-        const balance = ethers.formatEther(weiBalance);
+        const balance = ethers.utils.formatEther(weiBalance);
 
         const { chainId } = await provider.getNetwork();
 
