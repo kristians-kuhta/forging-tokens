@@ -65,7 +65,7 @@ contract Forge {
     }
   }
 
-  function _checkTokenCanBeBurned(uint256 _tokenId) internal view {
+  function _checkTokenCanBeBurned(uint256 _tokenId) internal pure {
     if (_tokenId < 4 || _tokenId > 6) {
       revert TokenCannotBeBurned();
     }
