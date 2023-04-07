@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Button, Spinner } from 'react-bootstrap';
 
 function Token({
   id,
+  contracts,
   name,
   description,
   image,
@@ -10,9 +11,13 @@ function Token({
   mintable,
   mintCooldown,
   minting,
+  forging,
   setMintCooldown,
-  handleMint
+  handleMint,
+  handleForge,
+  canBeForged
 }) {
+
   useEffect(() => {
     if (mintCooldown) {
       const timer = setTimeout(() => {
@@ -22,7 +27,7 @@ function Token({
     }
   }, [mintCooldown, setMintCooldown]);
 
-  const buttonText = () => {
+  const mintButtonText = () => {
     if (minting) {
       return 'Minting...';
     } else if (mintCooldown) {
@@ -47,9 +52,25 @@ function Token({
         mintable &&
           <Button onClick={() => handleMint(id)} disabled={mintCooldown || minting} >
             <span className="me-1">
-              { buttonText() }
+              { mintButtonText() }
             </span>
             { (minting || mintCooldown) && <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            }
+          </Button>
+      }
+      {
+        canBeForged &&
+          <Button onClick={() => handleForge(id)}>
+            <span className="me-1">
+              { forging ? 'Forging...' : 'Forge' }
+            </span>
+            { forging && <Spinner
                 as="span"
                 animation="border"
                 size="sm"
