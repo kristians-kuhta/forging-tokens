@@ -89,8 +89,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
       setMintCooldown(true);
 
       let tokens = [...collection];
-      tokens = await Promise.all(
-        tokens.map(async(token) => {
+      tokens = await Promise.all( tokens.map(async(token) => {
           if (token.id == tokenId) {
             token.balance++;
           } else if (token.id >= 3) {
@@ -105,7 +104,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     }
   }
 
-  const updateTokenBalancesAfterForging = (tokenId) => {
+  const updateTokensAfterForging = async (tokenId) => {
     let burnedTokenIds = [];
 
     if (tokenId == 3) {
@@ -118,15 +117,20 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
       burnedTokenIds = [0, 1, 2];
     }
 
-    setCollection(prev => prev.map((token) => {
-      if (token.id == tokenId) {
-        token.balance++
-      } else if (burnedTokenIds.includes(token.id)) {
-        token.balance--;
-      }
+    const tokens = await Promise.all(
+      collection.map(async (token) => {
+        if (token.id == tokenId || burnedTokenIds.includes(token.id)) {
+          token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
+        }
 
-      return token;
-    }));
+        if(token.id > 2) {
+          token.canBeForged = await contracts.Forge.canForgeToken(token.id);
+        }
+
+        return token;
+      })
+    );
+    setCollection(tokens);
   }
 
   const handleForge = async (tokenId) => {
@@ -138,7 +142,8 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
 
       setForging(false);
 
-      updateTokenBalancesAfterForging(tokenId);
+      updateTokensAfterForging(tokenId);
+
     } catch (error) {
       handleError(error);
     }
