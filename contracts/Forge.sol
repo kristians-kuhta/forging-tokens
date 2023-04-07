@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-// import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "./Item.sol";
 
@@ -9,7 +8,7 @@ contract Forge {
   uint256 public constant MINT_COOLDOWN = 1 minutes;
 
   error TokenIdCannotBeMinted();
-  error TokensCannotBeForged();
+  error TokenCannotBeForged();
   error AddressOnMintCooldown(uint256 remainingSeconds);
   error TokenCannotBeBurned();
 
@@ -24,16 +23,18 @@ contract Forge {
   //
   // Public functions
   //
-  function forgeTwo(uint256 _tokenId1, uint256 _tokenId2) public
-  {
-    _checkTwoTokensCanBeForged(_tokenId1, _tokenId2);
-    _forgeTwo(_tokenId1, _tokenId2);
+
+  function canForgeToken(uint256 _tokenId) public view returns (bool) {
+    return (_tokenId == 3 && _hasBalanceForToken3Forging()) ||
+      (_tokenId == 4 && _hasBalanceForToken4Forging()) ||
+      (_tokenId == 5 && _hasBalanceForToken5Forging()) ||
+      (_tokenId == 6 && _hasBalanceForToken6Forging());
   }
 
-  function forgeThree(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) public
+  function forge(uint256 _tokenId) public
   {
-    _checkThreeTokensCanBeForged(_tokenId1, _tokenId2, _tokenId3);
-    _forgeThree(_tokenId1, _tokenId2, _tokenId3);
+    _checkCanForgeToken(_tokenId);
+    _forge(_tokenId);
   }
 
   function mint(uint256 _tokenId) public {
@@ -59,6 +60,23 @@ contract Forge {
     return lastMint[_account] != 0 && lastMint[_account] > block.timestamp - MINT_COOLDOWN;
   }
 
+  function _hasBalanceForToken3Forging() internal view returns (bool) {
+    return item.balanceOf(msg.sender, 0) >= 1 && item.balanceOf(msg.sender, 1) >= 1;
+  }
+
+  function _hasBalanceForToken4Forging() internal view returns (bool) {
+    return item.balanceOf(msg.sender, 1) >= 1 && item.balanceOf(msg.sender, 2) >= 1;
+  }
+
+  function _hasBalanceForToken5Forging() internal view returns (bool) {
+    return item.balanceOf(msg.sender, 0) >= 1 && item.balanceOf(msg.sender, 2) >= 1;
+  }
+
+  function _hasBalanceForToken6Forging() internal view returns (bool) {
+    return item.balanceOf(msg.sender, 0) >= 1 &&
+      item.balanceOf(msg.sender, 1) >= 1 && item.balanceOf(msg.sender, 2) >= 1;
+  }
+
   function _checkTokenCanBeMinted(uint256 _tokenId) internal pure {
     if (_tokenId > 2) {
       revert TokenIdCannotBeMinted();
@@ -77,53 +95,39 @@ contract Forge {
     }
   }
 
-  function _checkTwoTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2) internal pure {
-    if (_twoTokensCanBeForged(_tokenId1, _tokenId2)) {
-      revert TokensCannotBeForged();
+  function _checkCanForgeToken(uint256 _tokenId) internal view {
+    if (!canForgeToken(_tokenId)) {
+      revert TokenCannotBeForged();
     }
   }
 
-  function _checkThreeTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) internal pure {
-    if (_threeTokensCanBeForged(_tokenId1, _tokenId2, _tokenId3)) {
-      revert TokensCannotBeForged();
+  function _forge(uint256 _tokenId) internal {
+    if (_tokenId == 3) {
+      _mintOneBurnTwo(_tokenId, 0, 1);
+    } else if (_tokenId == 4) {
+      _mintOneBurnTwo(_tokenId, 1, 2);
+    } else if (_tokenId == 5) {
+      _mintOneBurnTwo(_tokenId, 0, 2);
+    } else {
+      _mintOneBurnThree(_tokenId, 0, 1, 2);
     }
   }
 
-  function _twoTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2) internal pure returns(bool) {
-    return (_tokenId1 == 0 && _tokenId2 == 1) ||
-      (_tokenId1 == 1 && _tokenId2 == 2) ||
-      (_tokenId1 == 0 && _tokenId2 == 2);
+  function _mintOneBurnTwo(uint256 _mintedTokenId, uint256 _burnedTokenId1, uint256 _burnedTokenId2) internal {
+    item.mint(_mintedTokenId, msg.sender);
+    item.burn(msg.sender, _burnedTokenId1, 1);
+    item.burn(msg.sender, _burnedTokenId2, 1);
   }
 
-  function _threeTokensCanBeForged(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) internal pure returns(bool) {
-    return _tokenId1 == 0 && _tokenId2 == 1 && _tokenId3 == 2;
-  }
-
-  function _mintedTokenIdFromTwo(uint256 _tokenId1, uint256 _tokenId2) internal pure returns(uint256) {
-    if (_tokenId1 == 0 && _tokenId2 == 1) {
-      return 3;
-    } else if (_tokenId1 == 1 && _tokenId2 == 2) {
-      return 4;
-    } else if (_tokenId1 == 0 && _tokenId2 == 2) {
-      return 5;
-    }
-
-    return 777; // Default case, never going to happen
-  }
-
-  function _forgeTwo(uint256 _tokenId1, uint256 _tokenId2) internal {
-    uint256 mintedTokenId = _mintedTokenIdFromTwo(_tokenId1, _tokenId2);
-    item.mint(mintedTokenId, msg.sender);
-
-    item.burn(msg.sender, _tokenId1, 1);
-    item.burn(msg.sender, _tokenId2, 1);
-  }
-
-  function _forgeThree(uint256 _tokenId1, uint256 _tokenId2, uint256 _tokenId3) internal {
-    item.mint(6, msg.sender);
-
-    item.burn(msg.sender, _tokenId1, 1);
-    item.burn(msg.sender, _tokenId2, 1);
-    item.burn(msg.sender, _tokenId3, 1);
+  function _mintOneBurnThree(
+    uint256 _mintedTokenId,
+    uint256 _burnedTokenId1,
+    uint256 _burnedTokenId2,
+    uint256 _burnedTokenId3
+  ) internal {
+    item.mint(_mintedTokenId, msg.sender);
+    item.burn(msg.sender, _burnedTokenId1, 1);
+    item.burn(msg.sender, _burnedTokenId2, 1);
+    item.burn(msg.sender, _burnedTokenId3, 1);
   }
 }
