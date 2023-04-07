@@ -12,10 +12,13 @@ function Token({
   mintCooldown,
   minting,
   forging,
+  burning,
   setMintCooldown,
   handleMint,
   handleForge,
-  canBeForged
+  handleBurn,
+  canBeForged,
+  canBeBurned
 }) {
 
   useEffect(() => {
@@ -66,11 +69,27 @@ function Token({
       }
       {
         canBeForged &&
-          <Button onClick={() => handleForge(id)}>
+          <Button onClick={() => handleForge(id)} disabled={forging} >
             <span className="me-1">
               { forging ? 'Forging...' : 'Forge' }
             </span>
             { forging && <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+            }
+          </Button>
+      }
+      {
+        canBeBurned &&
+          <Button onClick={() => handleBurn(id)} disabled={burning} >
+            <span className="me-1">
+              { burning ? 'Burning...' : 'Burn' }
+            </span>
+            { burning && <Spinner
                 as="span"
                 animation="border"
                 size="sm"

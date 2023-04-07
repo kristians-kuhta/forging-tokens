@@ -5,11 +5,14 @@ function Tokens({
   collection,
   handleMint,
   handleForge,
+  handleBurn,
   mintCooldown,
   minting,
+  burning,
   forging,
   setMintCooldown,
 }) {
+
   return <ul className='d-flex'>
     { collection.map((token) => {
         return <Token
@@ -22,12 +25,15 @@ function Tokens({
           balance={token.balance}
           mintable={token.id < 3}
           canBeForged={token.canBeForged}
+          canBeBurned={token.canBeBurned}
           mintCooldown={mintCooldown}
           minting={minting}
           forging={forging}
+          burning={burning}
           setMintCooldown={setMintCooldown}
           handleMint={handleMint}
           handleForge={handleForge}
+          handleBurn={handleBurn}
         />
       })
     }
