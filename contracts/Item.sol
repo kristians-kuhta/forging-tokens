@@ -16,6 +16,10 @@ contract Item is ERC1155 {
     forge = new Forge(address(this));
   }
 
+  function contractURI() public view returns (string memory) {
+    return "ipfs://QmfBi7Gf2M9wLdC41aKKcncS2ns6nVgmffNAF3sFRnubqi";
+  }
+
   function uri(uint256 _tokenid) override public pure returns (string memory) {
     return string(
       abi.encodePacked(
