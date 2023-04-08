@@ -2,6 +2,8 @@
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 import './Forge.sol';
 
 contract Item is ERC1155 {
@@ -14,9 +16,13 @@ contract Item is ERC1155 {
     forge = new Forge(address(this));
   }
 
-  function uri() public view returns (string memory) {
-    // All tokens have the same uri, so just picking 1 as random number here
-    return super.uri(1);
+  function uri(uint256 _tokenid) override public pure returns (string memory) {
+    return string(
+      abi.encodePacked(
+        "ipfs://QmUSuYPXx3nxPaCJcvcNPuEMShzPpuDLGhnDmmtmJn4EJs/",
+        Strings.toString(_tokenid)
+      )
+    );
   }
 
   function _onlyForge() internal view {
