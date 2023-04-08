@@ -44,6 +44,13 @@ function App() {
         setWallet((prev) => ({...prev, address, balance, chainId}));
         setProvider(provider);
 
+        if (wallet.chainId != CHAIN_ID) {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${Number(CHAIN_ID).toString(16)}` }],
+          });
+        }
+
         const forge = new ethers.Contract(
           addresses.Forge,
           ForgeArtifact.abi,
