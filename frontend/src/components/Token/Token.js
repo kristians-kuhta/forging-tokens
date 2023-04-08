@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Card, Button, Spinner, InputGroup, Form } from 'react-bootstrap';
 
+import addresses from "./contracts/contract-address.json";
+
 function Token({
   id,
   contracts,
@@ -59,7 +61,11 @@ function Token({
   return <Card style={{ width: '18rem' }}>
     <Card.Img variant="top" src={image} />
     <Card.Body>
-      <Card.Title>{name}</Card.Title>
+      <Card.Title>
+        <a href={`https://testnets.opensea.io/assets/mumbai/${addresses.Item}/${id}`}>
+          {name}
+        </a>
+      </Card.Title>
       <Card.Text>
         { description }
         <br />
