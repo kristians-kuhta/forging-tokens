@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Card, Button, Spinner, InputGroup, Form } from 'react-bootstrap';
 
-import addresses from "./contracts/contract-address.json";
+import addresses from "../../contracts/contract-address.json";
 
 function Token({
   id,
