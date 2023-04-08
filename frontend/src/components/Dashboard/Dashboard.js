@@ -61,9 +61,9 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     if (!contracts || !contracts.Item) { return; }
 
     (async () => {
-      const tokenURI = await contracts.Item['uri()']();
       const items = []
       for(let tokenId = MIN_TOKEN_ID; tokenId <= MAX_TOKEN_ID; tokenId++) {
+        const tokenURI = await contracts.Item.uri(tokenId);
         const token = await buildToken(tokenId, tokenURI);
         items.push(token);
       }
