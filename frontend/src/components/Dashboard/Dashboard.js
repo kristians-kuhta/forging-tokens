@@ -24,14 +24,12 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     let data = {id};
     if (!tokenURI) { return data; }
 
-    const ipfsURL = tokenURI.replace('ipfs://', IPFS_GATEWAY_PREFIX).
-      replace('{id}', id);
+    const ipfsURL = tokenURI.replace('ipfs://', IPFS_GATEWAY_PREFIX).replace('{id}', id);
     data.url = ipfsURL;
     const tokenData = (await axios.get(ipfsURL)).data;
     const { name, description, image } = tokenData;
 
-    const imageURL = image.replace('ipfs://', IPFS_GATEWAY_PREFIX).
-      replace('{id}', id);
+    const imageURL = image.replace('ipfs://', IPFS_GATEWAY_PREFIX).replace('{id}', id);
 
     data.name = name;
     data.description = description;
@@ -57,7 +55,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     } catch (error) {
       handleError(error);
     }
-  }, [setMintCooldown, contracts.Forge]);
+  }, [contracts, contracts.Forge, setMintCooldown]);
 
   useEffect(() => {
     if (!contracts || !contracts.Item) { return; }
@@ -71,7 +69,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
       }
       setCollection(items);
     })();
-  }, [contracts, contracts.Item]);
+  }, [contracts, contracts.Item, buildToken]);
 
   const handleError = (error) => {
     const errorMessage = error.info &&
@@ -94,7 +92,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
       let tokens = [...collection];
       tokens = await Promise.all(
         tokens.map(async(token) => {
-          if (token.id == tokenId) {
+          if (token.id === tokenId) {
             token.balance++;
           } else if (token.id >= 3) {
             token.canBeForged = await contracts.Forge.canForgeToken(token.id);
@@ -112,19 +110,19 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   const updateTokensAfterForging = async (tokenId) => {
     let burnedTokenIds = [];
 
-    if (tokenId == 3) {
+    if (tokenId === 3) {
       burnedTokenIds = [0, 1];
-    } else if (tokenId == 4) {
+    } else if (tokenId === 4) {
       burnedTokenIds = [1, 2];
-    } else if (tokenId == 5) {
+    } else if (tokenId === 5) {
       burnedTokenIds = [0, 2];
-    } else if (tokenId == 6) {
+    } else if (tokenId === 6) {
       burnedTokenIds = [0, 1, 2];
     }
 
     const tokens = await Promise.all(
       collection.map(async (token) => {
-        if (token.id == tokenId || burnedTokenIds.includes(token.id)) {
+        if (token.id === tokenId || burnedTokenIds.includes(token.id)) {
           token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
         }
 
@@ -146,7 +144,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   const updateTokensAfterBurning = async (tokenId) => {
     const tokens = await Promise.all(
       collection.map(async (token) => {
-        if (token.id == tokenId) {
+        if (token.id === tokenId) {
           token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
           token.canBeBurned = await contracts.Forge.canBurnToken(token.id);
           token.canBeForged = await contracts.Forge.canForgeToken(token.id);
