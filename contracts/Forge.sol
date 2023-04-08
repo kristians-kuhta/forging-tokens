@@ -9,8 +9,9 @@ contract Forge {
 
   error TokenIdCannotBeMinted();
   error TokenCannotBeForged();
-  error AddressOnMintCooldown(uint256 remainingSeconds);
   error TokenCannotBeBurned();
+  error TokenCannotBeTraded();
+  error AddressOnMintCooldown(uint256 remainingSeconds);
 
   mapping(address => uint256) public lastMint;
 
@@ -31,14 +32,12 @@ contract Forge {
       (_tokenId == 6 && _hasBalanceForToken6Forging());
   }
 
-  function canBurnToken(uint256 _tokenId) public view returns (bool) {
-    return (_tokenId > 3 && _tokenId <= 6 && item.balanceOf(msg.sender, _tokenId) > 0);
+  function canTradeToken(uint256 _tokenId) public view returns (bool) {
+    return _isNonMintableToken(_tokenId) && item.balanceOf(msg.sender, _tokenId) > 0;
   }
 
-  function forge(uint256 _tokenId) public
-  {
-    _checkCanForgeToken(_tokenId);
-    _forge(_tokenId);
+  function canBurnToken(uint256 _tokenId) public view returns (bool) {
+    return (_isNonMintableToken(_tokenId) && item.balanceOf(msg.sender, _tokenId) > 0);
   }
 
   function mint(uint256 _tokenId) public {
@@ -48,9 +47,22 @@ contract Forge {
     item.mint(_tokenId, msg.sender);
   }
 
+  function forge(uint256 _tokenId) public
+  {
+    _checkCanForgeToken(_tokenId);
+    _forge(_tokenId);
+  }
+
   function burn(uint256 _tokenId) public {
     _checkTokenCanBeBurned(_tokenId);
     item.burn(msg.sender, _tokenId, 1);
+  }
+
+  function trade(uint256 _fromTokenId, uint256 _toTokenId) public {
+    _checkTokenCanBeTraded(_fromTokenId);
+
+    item.burn(msg.sender, _fromTokenId, 1);
+    item.mint(_toTokenId, msg.sender);
   }
 
   function mintCooldown() public view returns (bool) {
@@ -87,6 +99,12 @@ contract Forge {
     }
   }
 
+  function _checkTokenCanBeTraded(uint256 _tokenId) internal view {
+    if (!canTradeToken(_tokenId)) {
+      revert TokenCannotBeTraded();
+    }
+  }
+
   function _checkTokenCanBeBurned(uint256 _tokenId) internal pure {
     if (_tokenId < 4 || _tokenId > 6) {
       revert TokenCannotBeBurned();
@@ -103,6 +121,10 @@ contract Forge {
     if (!canForgeToken(_tokenId)) {
       revert TokenCannotBeForged();
     }
+  }
+
+  function _isNonMintableToken(uint256 _tokenId) internal pure returns (bool) {
+    return _tokenId >= 3 && _tokenId <= 6;
   }
 
   function _forge(uint256 _tokenId) internal {
