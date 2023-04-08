@@ -14,7 +14,7 @@ import ItemArtifact from "./contracts/Item.json";
 
 // Polygon Mumbai testnet or hardhat node (development)
 const CHAIN_ID =
-  (!process.env.NODE_ENV || process.env.NODE_ENV != 'production') ?
+  (!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') ?
     '31337' : '80001';
 
 function App() {
@@ -44,7 +44,7 @@ function App() {
         setWallet((prev) => ({...prev, address, balance, chainId}));
         setProvider(provider);
 
-        if (wallet.chainId != CHAIN_ID) {
+        if (wallet.chainId !== CHAIN_ID) {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: `0x${Number(CHAIN_ID).toString(16)}` }],
@@ -88,7 +88,7 @@ function App() {
         <Dashboard
           walletAddress={wallet.address}
           provider={provider}
-          isCorrectChain={wallet.chainId == CHAIN_ID }
+          isCorrectChain={wallet.chainId === CHAIN_ID }
           contracts={contracts}
         />
       </>
