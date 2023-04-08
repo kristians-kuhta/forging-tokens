@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import Tokens from '../Tokens/Tokens';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
@@ -20,7 +20,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   const MIN_TOKEN_ID = 0;
   const MAX_TOKEN_ID = 6;
 
-  const buildToken = async (id, tokenURI) => {
+  const buildToken = useCallback(async(id, tokenURI) => {
     let data = {id};
     if (!tokenURI) { return data; }
 
@@ -42,7 +42,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     data.balance = balance > 0 ? balance.toString() : 0;
 
     return data;
-  }
+  }, [contracts.Forge, contracts.Item, walletAddress]);
 
   useEffect(() => {
     if (!contracts || !contracts.Forge) { return; }
