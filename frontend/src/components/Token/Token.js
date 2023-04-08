@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Card, Button, Spinner } from 'react-bootstrap';
+import { useEffect, useState, useRef } from 'react';
+import { Card, Button, Spinner, InputGroup, Form } from 'react-bootstrap';
 
 function Token({
   id,
@@ -13,13 +13,18 @@ function Token({
   minting,
   forging,
   burning,
+  trading,
   setMintCooldown,
   handleMint,
   handleForge,
   handleBurn,
+  handleTrade,
   canBeForged,
-  canBeBurned
+  canBeBurned,
+  canBeTraded
 }) {
+
+  const toTokenId = useRef(null);
 
   useEffect(() => {
     if (mintCooldown) {
@@ -37,6 +42,17 @@ function Token({
       return 'Mint cooldown...';
     } else {
       return 'Mint';
+    }
+  }
+
+  const handleTokenTrade = (fromTokenId) => {
+    handleTrade(fromTokenId, toTokenId.current.value);
+  }
+
+  const handleTokenIdInput = (event) => {
+    const value = Number(event.target.value);
+    if (value < 0 || value > 2 ) {
+      toTokenId.current.value = "0";
     }
   }
 
@@ -98,6 +114,37 @@ function Token({
               />
             }
           </Button>
+      }
+      {
+        canBeTraded && (
+          <>
+            <InputGroup className="flex-fill mt-3">
+              <Form.Control
+                placeholder="TokenId"
+                aria-label="TokenId"
+                aria-describedby="tokenId"
+                ref={toTokenId}
+                type="number"
+                min="0"
+                max="2"
+                onInput={handleTokenIdInput}
+              />
+              <Button onClick={() => handleTokenTrade(id)} disabled={trading} >
+                <span className="me-1">
+                  { trading ? 'Trading...' : 'Trade' }
+                </span>
+                { trading && <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                }
+              </Button>
+            </InputGroup>
+          </>
+        )
       }
     </Card.Body>
   </Card>;

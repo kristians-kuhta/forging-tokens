@@ -6,10 +6,12 @@ function Tokens({
   handleMint,
   handleForge,
   handleBurn,
+  handleTrade,
   mintCooldown,
   minting,
   burning,
   forging,
+  trading,
   setMintCooldown,
 }) {
 
@@ -26,14 +28,17 @@ function Tokens({
           mintable={token.id < 3}
           canBeForged={token.canBeForged}
           canBeBurned={token.canBeBurned}
+          canBeTraded={token.canBeTraded}
           mintCooldown={mintCooldown}
           minting={minting}
           forging={forging}
           burning={burning}
+          trading={trading}
           setMintCooldown={setMintCooldown}
           handleMint={handleMint}
           handleForge={handleForge}
           handleBurn={handleBurn}
+          handleTrade={handleTrade}
         />
       })
     }

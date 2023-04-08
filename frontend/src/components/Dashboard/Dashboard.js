@@ -15,6 +15,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   const [minting, setMinting] = useState(false);
   const [forging, setForging] = useState(false);
   const [burning, setBurning] = useState(false);
+  const [trading, setTrading] = useState(false);
 
   const MIN_TOKEN_ID = 0;
   const MAX_TOKEN_ID = 6;
@@ -37,6 +38,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     data.image = imageURL;
     data.canBeForged = await contracts.Forge.canForgeToken(id);
     data.canBeBurned = await contracts.Forge.canBurnToken(id);
+    data.canBeTraded = await contracts.Forge.canTradeToken(id);
 
     const balance = await contracts.Item.balanceOf(walletAddress, id);
     data.balance = balance > 0 ? balance.toString() : 0;
@@ -128,6 +130,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
 
         if(token.id > 2) {
           token.canBeForged = await contracts.Forge.canForgeToken(token.id);
+          token.canBeTraded = await contracts.Forge.canTradeToken(token.id);
         }
 
         if(token.id > 3) {
@@ -146,7 +149,22 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
         if (token.id == tokenId) {
           token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
           token.canBeBurned = await contracts.Forge.canBurnToken(token.id);
+          token.canBeForged = await contracts.Forge.canForgeToken(token.id);
+          token.canBeTraded = await contracts.Forge.canTradeToken(token.id);
         }
+
+        return token;
+      })
+    );
+    setCollection(tokens);
+  }
+
+  const updateTokensAfterTrading = async (fromTokenId, toTokenId) => {
+    const tokens = await Promise.all(
+      collection.map(async (token) => {
+        token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
+        token.canBeTraded = await contracts.Forge.canTradeToken(token.id);
+        token.canBeForged = await contracts.Forge.canForgeToken(token.id);
 
         return token;
       })
@@ -186,6 +204,22 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     }
   }
 
+  const handleTrade = async (fromTokenId, toTokenId) => {
+    try {
+      setTrading(true);
+
+      const tx = await contracts.Forge.trade(fromTokenId, toTokenId);
+      await tx.wait();
+
+      setTrading(false);
+
+      updateTokensAfterTrading(fromTokenId, toTokenId);
+
+    } catch (error) {
+      handleError(error);
+    }
+  }
+
   if (!provider) {
     return <p>Connect to use the app!</p>;
   } else if (isCorrectChain) {
@@ -197,10 +231,12 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
         handleMint={handleMint}
         handleForge={handleForge}
         handleBurn={handleBurn}
+        handleTrade={handleTrade}
         mintCooldown={mintCooldown}
         minting={minting}
         burning={burning}
         forging={forging}
+        trading={trading}
         setMintCooldown={setMintCooldown}
       />
     </>;
