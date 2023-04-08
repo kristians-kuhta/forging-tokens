@@ -62,7 +62,7 @@ function Token({
     <Card.Img variant="top" src={image} />
     <Card.Body>
       <Card.Title>
-        <a href={`https://testnets.opensea.io/assets/mumbai/${addresses.Item}/${id}`}>
+        <a href={`https://testnets.opensea.io/assets/mumbai/${addresses.Item.toLowerCase()}/${id}`}>
           {name}
         </a>
       </Card.Title>
