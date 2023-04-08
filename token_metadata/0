@@ -1,0 +1,14 @@
+{
+  "name": "Robot number #0",
+  "description": "Battle ready robot, made from pure steel",
+  "external_url": "",
+  "background_color": "FFFFFF",
+  "image": "ipfs://QmcS4wbQtzW3NT9taTs8etjU8JaMxz1p1R5fVZ8dUfJiW9",
+  "attributes": [
+    {
+      "display_type": "boost_percentage",
+      "trait_type": "Durability",
+      "value": 84
+    }
+  ]
+}
