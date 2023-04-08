@@ -15,7 +15,7 @@ function Tokens({
   setMintCooldown,
 }) {
 
-  return <ul className='d-flex'>
+  return <ul className='d-flex mt-5 flex-wrap' style={{gap: '2rem'}}>
     { collection.map((token) => {
         return <Token
           key={`token-${token.id}`}
