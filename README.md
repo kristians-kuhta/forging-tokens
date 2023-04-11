@@ -5,6 +5,6 @@ Test out the project here: https://lighthearted-marshmallow-3e1e91.netlify.app
  https://testnets.opensea.io/collection/forged-robots-1
 # Polygonscan (Mumbai testnet)
 
-- Item: https://mumbai.polygonscan.com/address/0xf393737e15ee1dda124914bc831490a984daf5e7
-- Forge: https://mumbai.polygonscan.com/address/0x2260c2bf1d86da5ee749b8e9d1a06e4fbd1ffadf
+- Item: https://mumbai.polygonscan.com/address/0xe12EEB5443594b1116DfB71430082158ee49AED5
+- Forge: https://mumbai.polygonscan.com/address/0x39A488C815fAe060211C0f4B57Cc1C1b9B210133
 
