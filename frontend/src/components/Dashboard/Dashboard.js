@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 import { useState, useEffect, useCallback } from 'react';
-import { BigNumber } from 'ethers';
 
 import Tokens from '../Tokens/Tokens';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
