@@ -1,13 +1,10 @@
-# Sample Hardhat Project
+# Website
+Test out the project here: https://lighthearted-marshmallow-3e1e91.netlify.app
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+# Opensea
+ https://testnets.opensea.io/collection/forged-robots-1
+# Polygonscan (Mumbai testnet)
 
-Try running some of the following tasks:
+- Item: https://mumbai.polygonscan.com/address/0xf393737e15ee1dda124914bc831490a984daf5e7
+- Forge: https://mumbai.polygonscan.com/address/0x2260c2bf1d86da5ee749b8e9d1a06e4fbd1ffadf
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
