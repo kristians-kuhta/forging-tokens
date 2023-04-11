@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import { useState, useEffect, useCallback } from 'react';
+import { BigNumber } from 'ethers';
 
 import Tokens from '../Tokens/Tokens';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
@@ -34,9 +35,9 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     data.name = name;
     data.description = description;
     data.image = imageURL;
-    data.canBeForged = await contracts.Forge.canForgeToken(id);
-    data.canBeBurned = await contracts.Forge.canBurnToken(id);
-    data.canBeTraded = await contracts.Forge.canTradeToken(id);
+    data.canBeForged = await canForgeToken(id);
+    data.canBeBurned = await canBurnToken(id);
+    data.canBeTraded = await canTradeToken(id);
 
     const balance = await contracts.Item.balanceOf(walletAddress, id);
     data.balance = balance > 0 ? balance.toString() : 0;
@@ -89,85 +90,73 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
       setMinting(false);
       setMintCooldown(true);
 
-      let tokens = [...collection];
-      tokens = await Promise.all(
-        tokens.map(async(token) => {
-          if (token.id === tokenId) {
-            token.balance++;
-          } else if (token.id >= 3) {
-            token.canBeForged = await contracts.Forge.canForgeToken(token.id);
-          }
-          return token;
-          }
-        )
-      );
-      setCollection(tokens);
+      updateTokens();
     } catch (error) {
       handleError(error);
     }
   }
 
-  const updateTokensAfterForging = async (tokenId) => {
-    let burnedTokenIds = [];
+  const updatedToken = async (token) => {
+    token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
+    token.canBeForged = await canForgeToken(token.id);
+    token.canBeTraded = await canTradeToken(token.id);
+    token.canBeBurned = await canBurnToken(token.id);
 
-    if (tokenId === 3) {
-      burnedTokenIds = [0, 1];
+    return token;
+  }
+
+  const updateTokens = async () => {
+    const tokens = await Promise.all(collection.map(token => updatedToken(token)));
+
+    setCollection(tokens);
+  }
+
+  // const updateTokensAfterBurning = async (tokenId) => {
+  //   const tokens = await Promise.all(
+  //     collection.map(async (token) => {
+  //       if (token.id === tokenId) {
+  //         token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
+  //         token.canBeBurned = await canBurnToken(token.id);
+  //         token.canBeForged = await canForgeToken(token.id);
+  //         token.canBeTraded = await canTradeToken(token.id);
+  //       }
+
+  //       return token;
+  //     })
+  //   );
+  //   setCollection(tokens);
+  // }
+
+  async function ownsTokens(tokenIds) {
+    const balancePromises = tokenIds.map(tokenId => contracts.Item.balanceOf(walletAddress, tokenId));
+    const balances = await Promise.all(balancePromises);
+    return balances.every(balance => {
+      return balance.toString() !== '0';
+    });
+  }
+
+  async function canForgeToken(tokenId) {
+    if (tokenId < 3) {
+      return false;
+    } else if (tokenId === 3) {
+      return await ownsTokens([0, 1]);
     } else if (tokenId === 4) {
-      burnedTokenIds = [1, 2];
+      return await ownsTokens([1, 2]);
     } else if (tokenId === 5) {
-      burnedTokenIds = [0, 2];
+      return await ownsTokens([0, 2]);
     } else if (tokenId === 6) {
-      burnedTokenIds = [0, 1, 2];
+      return await ownsTokens([0, 1, 2]);
+    } else {
+      return false;
     }
-
-    const tokens = await Promise.all(
-      collection.map(async (token) => {
-        if (token.id === tokenId || burnedTokenIds.includes(token.id)) {
-          token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
-        }
-
-        if(token.id > 2) {
-          token.canBeForged = await contracts.Forge.canForgeToken(token.id);
-          token.canBeTraded = await contracts.Forge.canTradeToken(token.id);
-        }
-
-        if(token.id > 3) {
-          token.canBeBurned = await contracts.Forge.canBurnToken(token.id);
-        }
-
-        return token;
-      })
-    );
-    setCollection(tokens);
   }
 
-  const updateTokensAfterBurning = async (tokenId) => {
-    const tokens = await Promise.all(
-      collection.map(async (token) => {
-        if (token.id === tokenId) {
-          token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
-          token.canBeBurned = await contracts.Forge.canBurnToken(token.id);
-          token.canBeForged = await contracts.Forge.canForgeToken(token.id);
-          token.canBeTraded = await contracts.Forge.canTradeToken(token.id);
-        }
-
-        return token;
-      })
-    );
-    setCollection(tokens);
+  async function canBurnToken(tokenId) {
+    return tokenId > 3 && await ownsTokens([tokenId]);
   }
 
-  const updateTokensAfterTrading = async (fromTokenId, toTokenId) => {
-    const tokens = await Promise.all(
-      collection.map(async (token) => {
-        token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
-        token.canBeTraded = await contracts.Forge.canTradeToken(token.id);
-        token.canBeForged = await contracts.Forge.canForgeToken(token.id);
-
-        return token;
-      })
-    );
-    setCollection(tokens);
+  async function canTradeToken(tokenId) {
+    return tokenId < 3 && await ownsTokens([tokenId]);
   }
 
   const handleForge = async (tokenId) => {
@@ -179,7 +168,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
 
       setForging(false);
 
-      updateTokensAfterForging(tokenId);
+      updateTokens();
 
     } catch (error) {
       handleError(error);
@@ -195,7 +184,8 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
 
       setBurning(false);
 
-      updateTokensAfterBurning(tokenId);
+      // updateTokensAfterBurning(tokenId);
+      updateTokens();
 
     } catch (error) {
       handleError(error);
@@ -211,7 +201,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
 
       setTrading(false);
 
-      updateTokensAfterTrading(fromTokenId, toTokenId);
+      updateTokens();
 
     } catch (error) {
       handleError(error);
