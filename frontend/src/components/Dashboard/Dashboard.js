@@ -20,6 +20,47 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   const MIN_TOKEN_ID = 0;
   const MAX_TOKEN_ID = 6;
 
+  const ownsTokens = useCallback(async (tokenIds) => {
+    const balancePromises = tokenIds.map(tokenId => contracts.Item.balanceOf(walletAddress, tokenId));
+    const balances = await Promise.all(balancePromises);
+    return balances.every(balance => {
+      return balance.toString() !== '0';
+    });
+  }, [contracts.Item, walletAddress]);
+
+  const canForgeToken = useCallback(async (tokenId) => {
+    if (tokenId < 3) {
+      return false;
+    } else if (tokenId === 3) {
+      return await ownsTokens([0, 1]);
+    } else if (tokenId === 4) {
+      return await ownsTokens([1, 2]);
+    } else if (tokenId === 5) {
+      return await ownsTokens([0, 2]);
+    } else if (tokenId === 6) {
+      return await ownsTokens([0, 1, 2]);
+    } else {
+      return false;
+    }
+  }, [ownsTokens]);
+
+  const canBurnToken = useCallback(async (tokenId) => {
+    return tokenId > 3 && await ownsTokens([tokenId]);
+  }, [ownsTokens]);
+
+  const canTradeToken = useCallback(async (tokenId) => {
+    return tokenId < 3 && await ownsTokens([tokenId]);
+  }, [ownsTokens]);
+
+  const updatedToken = useCallback(async (token) => {
+    token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
+    token.canBeForged = await canForgeToken(token.id);
+    token.canBeTraded = await canTradeToken(token.id);
+    token.canBeBurned = await canBurnToken(token.id);
+
+    return token;
+  }, [contracts.Item, walletAddress, canForgeToken, canTradeToken, canBurnToken]);
+
   const buildToken = useCallback(async(id, tokenURI) => {
     let data = {id};
     if (!tokenURI) { return data; }
@@ -34,15 +75,10 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     data.name = name;
     data.description = description;
     data.image = imageURL;
-    data.canBeForged = await canForgeToken(id);
-    data.canBeBurned = await canBurnToken(id);
-    data.canBeTraded = await canTradeToken(id);
-
-    const balance = await contracts.Item.balanceOf(walletAddress, id);
-    data.balance = balance > 0 ? balance.toString() : 0;
+    data = updatedToken(data);
 
     return data;
-  }, [contracts.Forge, contracts.Item, walletAddress]);
+  }, [updatedToken]);
 
   useEffect(() => {
     if (!contracts || !contracts.Forge) { return; }
@@ -95,68 +131,12 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     }
   }
 
-  const updatedToken = async (token) => {
-    token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
-    token.canBeForged = await canForgeToken(token.id);
-    token.canBeTraded = await canTradeToken(token.id);
-    token.canBeBurned = await canBurnToken(token.id);
-
-    return token;
-  }
-
   const updateTokens = async () => {
     const tokens = await Promise.all(collection.map(token => updatedToken(token)));
 
     setCollection(tokens);
   }
 
-  // const updateTokensAfterBurning = async (tokenId) => {
-  //   const tokens = await Promise.all(
-  //     collection.map(async (token) => {
-  //       if (token.id === tokenId) {
-  //         token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
-  //         token.canBeBurned = await canBurnToken(token.id);
-  //         token.canBeForged = await canForgeToken(token.id);
-  //         token.canBeTraded = await canTradeToken(token.id);
-  //       }
-
-  //       return token;
-  //     })
-  //   );
-  //   setCollection(tokens);
-  // }
-
-  async function ownsTokens(tokenIds) {
-    const balancePromises = tokenIds.map(tokenId => contracts.Item.balanceOf(walletAddress, tokenId));
-    const balances = await Promise.all(balancePromises);
-    return balances.every(balance => {
-      return balance.toString() !== '0';
-    });
-  }
-
-  async function canForgeToken(tokenId) {
-    if (tokenId < 3) {
-      return false;
-    } else if (tokenId === 3) {
-      return await ownsTokens([0, 1]);
-    } else if (tokenId === 4) {
-      return await ownsTokens([1, 2]);
-    } else if (tokenId === 5) {
-      return await ownsTokens([0, 2]);
-    } else if (tokenId === 6) {
-      return await ownsTokens([0, 1, 2]);
-    } else {
-      return false;
-    }
-  }
-
-  async function canBurnToken(tokenId) {
-    return tokenId > 3 && await ownsTokens([tokenId]);
-  }
-
-  async function canTradeToken(tokenId) {
-    return tokenId < 3 && await ownsTokens([tokenId]);
-  }
 
   const handleForge = async (tokenId) => {
     try {
