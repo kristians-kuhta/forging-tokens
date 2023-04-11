@@ -8,7 +8,6 @@ contract Forge {
   uint256 public constant MINT_COOLDOWN = 1 minutes;
 
   error TokenIdCannotBeMinted();
-  error TokenCannotBeForged();
   error TokenCannotBeBurned();
   error TokenCannotBeTraded();
   error AddressOnMintCooldown(uint256 remainingSeconds);
@@ -25,21 +24,6 @@ contract Forge {
   // Public functions
   //
 
-  function canForgeToken(uint256 _tokenId) public view returns (bool) {
-    return (_tokenId == 3 && _hasBalanceForToken3Forging()) ||
-      (_tokenId == 4 && _hasBalanceForToken4Forging()) ||
-      (_tokenId == 5 && _hasBalanceForToken5Forging()) ||
-      (_tokenId == 6 && _hasBalanceForToken6Forging());
-  }
-
-  function canTradeToken(uint256 _tokenId) public view returns (bool) {
-    return _isNonMintableToken(_tokenId) && item.balanceOf(msg.sender, _tokenId) > 0;
-  }
-
-  function canBurnToken(uint256 _tokenId) public view returns (bool) {
-    return (_isNonMintableToken(_tokenId) && item.balanceOf(msg.sender, _tokenId) > 0);
-  }
-
   function mint(uint256 _tokenId) public {
     _checkTokenCanBeMinted(_tokenId);
     _checkAddressOnMintCooldown();
@@ -49,7 +33,6 @@ contract Forge {
 
   function forge(uint256 _tokenId) public
   {
-    _checkCanForgeToken(_tokenId);
     _forge(_tokenId);
   }
 
@@ -59,10 +42,16 @@ contract Forge {
   }
 
   function trade(uint256 _fromTokenId, uint256 _toTokenId) public {
-    _checkTokenCanBeTraded(_fromTokenId);
+    require(_fromTokenId != _toTokenId);
 
-    item.burn(msg.sender, _fromTokenId, 1);
-    item.mint(_toTokenId, msg.sender);
+    if (_fromTokenId > 2) {
+      item.burn(msg.sender, _fromTokenId, 1);
+    } else if (_toTokenId < 3) {
+      item.burn(msg.sender, _fromTokenId, 1);
+      item.mint(_toTokenId, msg.sender);
+    } else {
+     revert();
+    }
   }
 
   function mintCooldown() public view returns (bool) {
@@ -72,25 +61,12 @@ contract Forge {
   //  Internal functions
   //
 
+  function _canTradeToken(uint256 _tokenId) internal view returns (bool) {
+    return _tokenId < 3 && item.balanceOf(msg.sender, _tokenId) > 0;
+  }
+
   function _addressOnMintCooldown(address _account) internal view returns (bool) {
     return lastMint[_account] != 0 && lastMint[_account] > block.timestamp - MINT_COOLDOWN;
-  }
-
-  function _hasBalanceForToken3Forging() internal view returns (bool) {
-    return item.balanceOf(msg.sender, 0) >= 1 && item.balanceOf(msg.sender, 1) >= 1;
-  }
-
-  function _hasBalanceForToken4Forging() internal view returns (bool) {
-    return item.balanceOf(msg.sender, 1) >= 1 && item.balanceOf(msg.sender, 2) >= 1;
-  }
-
-  function _hasBalanceForToken5Forging() internal view returns (bool) {
-    return item.balanceOf(msg.sender, 0) >= 1 && item.balanceOf(msg.sender, 2) >= 1;
-  }
-
-  function _hasBalanceForToken6Forging() internal view returns (bool) {
-    return item.balanceOf(msg.sender, 0) >= 1 &&
-      item.balanceOf(msg.sender, 1) >= 1 && item.balanceOf(msg.sender, 2) >= 1;
   }
 
   function _checkTokenCanBeMinted(uint256 _tokenId) internal pure {
@@ -100,13 +76,13 @@ contract Forge {
   }
 
   function _checkTokenCanBeTraded(uint256 _tokenId) internal view {
-    if (!canTradeToken(_tokenId)) {
+    if (!_canTradeToken(_tokenId)) {
       revert TokenCannotBeTraded();
     }
   }
 
   function _checkTokenCanBeBurned(uint256 _tokenId) internal pure {
-    if (_tokenId < 4 || _tokenId > 6) {
+    if (_tokenId < 4) {
       revert TokenCannotBeBurned();
     }
   }
@@ -117,16 +93,6 @@ contract Forge {
     }
   }
 
-  function _checkCanForgeToken(uint256 _tokenId) internal view {
-    if (!canForgeToken(_tokenId)) {
-      revert TokenCannotBeForged();
-    }
-  }
-
-  function _isNonMintableToken(uint256 _tokenId) internal pure returns (bool) {
-    return _tokenId >= 3 && _tokenId <= 6;
-  }
-
   function _forge(uint256 _tokenId) internal {
     if (_tokenId == 3) {
       _mintOneBurnTwo(_tokenId, 0, 1);
@@ -134,8 +100,10 @@ contract Forge {
       _mintOneBurnTwo(_tokenId, 1, 2);
     } else if (_tokenId == 5) {
       _mintOneBurnTwo(_tokenId, 0, 2);
-    } else {
+    } else if (_tokenId == 6) {
       _mintOneBurnThree(_tokenId, 0, 1, 2);
+    } else {
+      revert();
     }
   }
 
