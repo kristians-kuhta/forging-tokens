@@ -53,7 +53,7 @@ function Token({
 
   const handleTokenIdInput = (event) => {
     const value = Number(event.target.value);
-    if (value < 0 || value > 2 ) {
+    if (value < 0 || value > 2 || event.target.value === '') {
       toTokenId.current.value = "0";
     }
   }
