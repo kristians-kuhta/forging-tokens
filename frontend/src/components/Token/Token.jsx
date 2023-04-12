@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
+
+import PropTypes from 'prop-types';
+
 import {
   Card, Button, Spinner, InputGroup, Form,
 } from 'react-bootstrap';
@@ -7,7 +10,6 @@ import addresses from '../../contracts/contract-address.json';
 
 function Token({
   id,
-  contracts,
   name,
   description,
   image,
@@ -36,6 +38,8 @@ function Token({
       }, 60000);
       return () => clearTimeout(timer);
     }
+
+    return null;
   }, [mintCooldown, setMintCooldown]);
 
   const mintButtonText = () => {
@@ -170,5 +174,27 @@ function Token({
     </Card>
   );
 }
+
+Token.propTypes = {
+  id: PropTypes.number.isRequired,
+  name: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  image: PropTypes.string.isRequired,
+  balance: PropTypes.number.isRequired,
+  mintable: PropTypes.bool.isRequired,
+  mintCooldown: PropTypes.bool.isRequired,
+  minting: PropTypes.bool.isRequired,
+  forging: PropTypes.bool.isRequired,
+  burning: PropTypes.bool.isRequired,
+  trading: PropTypes.bool.isRequired,
+  setMintCooldown: PropTypes.func.isRequired,
+  handleMint: PropTypes.func.isRequired,
+  handleForge: PropTypes.func.isRequired,
+  handleBurn: PropTypes.func.isRequired,
+  handleTrade: PropTypes.func.isRequired,
+  canBeForged: PropTypes.bool.isRequired,
+  canBeBurned: PropTypes.bool.isRequired,
+  canBeTraded: PropTypes.bool.isRequired,
+};
 
 export default Token;

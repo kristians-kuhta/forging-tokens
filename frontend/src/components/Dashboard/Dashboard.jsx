@@ -1,13 +1,20 @@
 import axios from 'axios';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+
+import PropTypes from 'prop-types';
 
 import Tokens from '../Tokens/Tokens';
 import ErrorMessage from '../ErrorMessage/ErrorMessage';
 
 const IPFS_GATEWAY_PREFIX = 'https://forge-token.infura-ipfs.io/ipfs/';
 
-function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
+function Dashboard({
+  walletAddress,
+  provider,
+  isCorrectChain,
+  contracts
+}) {
   const [errorMessage, setErrorMessage] = useState(null);
   const [collection, setCollection] = useState([]);
 
@@ -20,100 +27,135 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
   const MIN_TOKEN_ID = 0;
   const MAX_TOKEN_ID = 6;
 
-  const ownsTokens = useCallback(async (tokenIds) => {
-    const balancePromises = tokenIds.map(tokenId => contracts.Item.balanceOf(walletAddress, tokenId));
-    const balances = await Promise.all(balancePromises);
-    return balances.every(balance => {
-      return balance.toString() !== '0';
-    });
-  }, [contracts.Item, walletAddress]);
+  const ownsTokens = useCallback(
+    async (tokenIds) => {
+      const balancePromises = tokenIds.map((tokenId) => contracts.Item
+        .balanceOf(walletAddress, tokenId));
+      const balances = await Promise.all(balancePromises);
+      return balances.every((balance) => balance.toString() !== '0');
+    },
+    [contracts.Item, walletAddress,]
+  );
 
-  const canForgeToken = useCallback(async (tokenId) => {
-    if (tokenId < 3) {
+  const canForgeToken = useCallback(
+    async (tokenId) => {
+      if (tokenId < 3) {
+        return false;
+      }
+      if (tokenId === 3) {
+        return ownsTokens([0, 1]);
+      }
+      if (tokenId === 4) {
+        return ownsTokens([1, 2]);
+      }
+      if (tokenId === 5) {
+        return ownsTokens([0, 2]);
+      }
+      if (tokenId === 6) {
+        return ownsTokens([0, 1, 2]);
+      }
       return false;
-    } else if (tokenId === 3) {
-      return await ownsTokens([0, 1]);
-    } else if (tokenId === 4) {
-      return await ownsTokens([1, 2]);
-    } else if (tokenId === 5) {
-      return await ownsTokens([0, 2]);
-    } else if (tokenId === 6) {
-      return await ownsTokens([0, 1, 2]);
-    } else {
-      return false;
-    }
-  }, [ownsTokens]);
+    },
+    [ownsTokens,]
+  );
 
-  const canBurnToken = useCallback(async (tokenId) => {
-    return tokenId > 3 && await ownsTokens([tokenId]);
-  }, [ownsTokens]);
+  const canBurnToken = useCallback(
+    async (tokenId) => tokenId > 3 && ownsTokens([tokenId]),
+    [ownsTokens,]
+  );
 
-  const canTradeToken = useCallback(async (tokenId) => {
-    return tokenId < 3 && await ownsTokens([tokenId]);
-  }, [ownsTokens]);
+  const canTradeToken = useCallback(
+    async (tokenId) => tokenId < 3 && ownsTokens([tokenId]),
+    [ownsTokens,]
+  );
 
-  const updatedToken = useCallback(async (token) => {
-    token.balance = Number(await contracts.Item.balanceOf(walletAddress, token.id));
-    token.canBeForged = await canForgeToken(token.id);
-    token.canBeTraded = await canTradeToken(token.id);
-    token.canBeBurned = await canBurnToken(token.id);
+  const updatedToken = useCallback(
+    async (token) => {
+      const newToken = { ...token };
+      newToken.balance = Number(
+        await contracts.Item.balanceOf(walletAddress, token.id),
+      );
+      newToken.canBeForged = await canForgeToken(token.id);
+      newToken.canBeTraded = await canTradeToken(token.id);
+      newToken.canBeBurned = await canBurnToken(token.id);
 
-    return token;
-  }, [contracts.Item, walletAddress, canForgeToken, canTradeToken, canBurnToken]);
+      return newToken;
+    },
+    [contracts.Item, walletAddress, canForgeToken, canTradeToken, canBurnToken,]
+  );
 
-  const buildToken = useCallback(async(id, tokenURI) => {
-    let data = {id};
-    if (!tokenURI) { return data; }
+  const buildToken = useCallback(
+    async (id, tokenURI) => {
+      let data = { id };
+      if (!tokenURI) {
+        return data;
+      }
 
-    const ipfsURL = tokenURI.replace('ipfs://', IPFS_GATEWAY_PREFIX).replace('{id}', id);
-    data.url = ipfsURL;
-    const tokenData = (await axios.get(ipfsURL)).data;
-    const { name, description, image } = tokenData;
+      const ipfsURL = tokenURI
+        .replace('ipfs://', IPFS_GATEWAY_PREFIX)
+        .replace('{id}', id);
+      data.url = ipfsURL;
+      const tokenData = (await axios.get(ipfsURL)).data;
+      const { name, description, image } = tokenData;
 
-    const imageURL = image.replace('ipfs://', IPFS_GATEWAY_PREFIX).replace('{id}', id);
+      const imageURL = image
+        .replace('ipfs://', IPFS_GATEWAY_PREFIX)
+        .replace('{id}', id);
 
-    data.name = name;
-    data.description = description;
-    data.image = imageURL;
-    data = updatedToken(data);
+      data.name = name;
+      data.description = description;
+      data.image = imageURL;
+      data = updatedToken(data);
 
-    return data;
-  }, [updatedToken]);
+      return data;
+    },
+    [updatedToken,]
+  );
+
+  const handleError = (error) => {
+    const message = error.info
+      && error.info.error
+      && error.info.error.data
+      && error.info.error.data.message;
+    setErrorMessage(message);
+  };
 
   useEffect(() => {
-    if (!contracts || !contracts.Forge) { return; }
+    if (!contracts || !contracts.Forge) {
+      return;
+    }
 
     try {
-      contracts.Forge.mintCooldown().then(cooldownActive => {
+      contracts.Forge.mintCooldown().then((cooldownActive) => {
         setMintCooldown(cooldownActive);
       });
-
     } catch (error) {
       handleError(error);
     }
   }, [contracts, contracts.Forge, setMintCooldown]);
 
   useEffect(() => {
-    if (!contracts || !contracts.Item) { return; }
+    if (!contracts || !contracts.Item) {
+      return;
+    }
 
     (async () => {
-      const items = []
-      for(let tokenId = MIN_TOKEN_ID; tokenId <= MAX_TOKEN_ID; tokenId++) {
-        const tokenURI = await contracts.Item.uri(tokenId);
-        const token = await buildToken(tokenId, tokenURI);
-        items.push(token);
+      const items = [];
+      for (let tokenId = MIN_TOKEN_ID; tokenId <= MAX_TOKEN_ID; tokenId += 1) {
+        contracts.Item.uri(tokenId).then((tokenURI) => {
+          const token = buildToken(tokenId, tokenURI);
+          items.push(token);
+        });
       }
-      setCollection(items);
+      setCollection(await Promise.all(items));
     })();
   }, [contracts, contracts.Item, buildToken]);
 
-  const handleError = (error) => {
-    const errorMessage = error.info &&
-      error.info.error && error.info.error.data &&
-      error.info.error.data.message;
-    setErrorMessage(errorMessage);
-    console.error(error);
-  }
+  const updateTokens = async () => {
+    const tokens = await Promise.all(collection.map((token) => updatedToken(token)));
+
+    setCollection(tokens);
+  };
 
   const handleMint = async (tokenId) => {
     try {
@@ -129,14 +171,7 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
     } catch (error) {
       handleError(error);
     }
-  }
-
-  const updateTokens = async () => {
-    const tokens = await Promise.all(collection.map(token => updatedToken(token)));
-
-    setCollection(tokens);
-  }
-
+  };
 
   const handleForge = async (tokenId) => {
     try {
@@ -148,11 +183,10 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
       setForging(false);
 
       updateTokens();
-
     } catch (error) {
       handleError(error);
     }
-  }
+  };
 
   const handleBurn = async (tokenId) => {
     try {
@@ -165,11 +199,10 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
 
       // updateTokensAfterBurning(tokenId);
       updateTokens();
-
     } catch (error) {
       handleError(error);
     }
-  }
+  };
 
   const handleTrade = async (fromTokenId, toTokenId) => {
     try {
@@ -181,35 +214,43 @@ function Dashboard({walletAddress, provider, isCorrectChain, contracts}) {
       setTrading(false);
 
       updateTokens();
-
     } catch (error) {
       handleError(error);
     }
-  }
+  };
 
   if (!provider) {
     return <p>Connect to use the app!</p>;
-  } else if (isCorrectChain) {
-    return <>
-      { errorMessage && <ErrorMessage text={errorMessage}/> }
-      <Tokens
-        contracts={contracts}
-        collection={collection}
-        handleMint={handleMint}
-        handleForge={handleForge}
-        handleBurn={handleBurn}
-        handleTrade={handleTrade}
-        mintCooldown={mintCooldown}
-        minting={minting}
-        burning={burning}
-        forging={forging}
-        trading={trading}
-        setMintCooldown={setMintCooldown}
-      />
-    </>;
-  } else {
-    return <p>Please, switch to Polygon Mumbai testnet to use the app!</p>;
   }
+  if (isCorrectChain) {
+    return (
+      <>
+        {errorMessage && <ErrorMessage text={errorMessage} />}
+        <Tokens
+          contracts={contracts}
+          collection={collection}
+          handleMint={handleMint}
+          handleForge={handleForge}
+          handleBurn={handleBurn}
+          handleTrade={handleTrade}
+          mintCooldown={mintCooldown}
+          minting={minting}
+          burning={burning}
+          forging={forging}
+          trading={trading}
+          setMintCooldown={setMintCooldown}
+        />
+      </>
+    );
+  }
+  return <p>Please, switch to Polygon Mumbai testnet to use the app!</p>;
 }
+
+Dashboard.propTypes = {
+  walletAddress: PropTypes.string.isRequired,
+  provider: PropTypes.objectOf(PropTypes.object()).isRequired,
+  isCorrectChain: PropTypes.bool.isRequired,
+  contracts: PropTypes.objectOf(PropTypes.object()).isRequired,
+};
 
 export default Dashboard;
