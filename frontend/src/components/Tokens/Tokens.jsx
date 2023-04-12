@@ -1,3 +1,6 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
 import Token from '../Token/Token';
 
 function Tokens({
@@ -14,10 +17,10 @@ function Tokens({
   trading,
   setMintCooldown,
 }) {
-
-  return <ul className='d-flex mt-5 flex-wrap' style={{gap: '2rem'}}>
-    { collection.map((token) => {
-        return <Token
+  return (
+    <ul className="d-flex mt-5 flex-wrap" style={{ gap: '2rem' }}>
+      { collection.map((token) => (
+        <Token
           key={`token-${token.id}`}
           id={token.id}
           contracts={contracts}
@@ -40,9 +43,24 @@ function Tokens({
           handleBurn={handleBurn}
           handleTrade={handleTrade}
         />
-      })
-    }
-  </ul>
+      )) }
+    </ul>
+  );
 }
+
+Tokens.propTypes = {
+  contracts: PropTypes.objectOf(PropTypes.object()).isRequired,
+  collection: PropTypes.arrayOf(PropTypes.object()).isRequired,
+  handleMint: PropTypes.func.isRequired,
+  handleForge: PropTypes.func.isRequired,
+  handleBurn: PropTypes.func.isRequired,
+  handleTrade: PropTypes.func.isRequired,
+  mintCooldown: PropTypes.bool.isRequired,
+  minting: PropTypes.bool.isRequired,
+  burning: PropTypes.bool.isRequired,
+  forging: PropTypes.bool.isRequired,
+  trading: PropTypes.bool.isRequired,
+  setMintCooldown: PropTypes.func.isRequired
+};
 
 export default Tokens;
