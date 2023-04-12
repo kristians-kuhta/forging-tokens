@@ -1,6 +1,14 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
 import { Navbar, Container, Button } from 'react-bootstrap';
 
-function Navigation({address, balance, balanceUnit, connectAccount}) {
+function Navigation({
+  address,
+  balance,
+  balanceUnit,
+  connectAccount
+}) {
   function connectedWallet() {
     return `${address} (${balance} ${balanceUnit})`;
   }
@@ -20,5 +28,12 @@ function Navigation({address, balance, balanceUnit, connectAccount}) {
     </Navbar>
   );
 }
+
+Navigation.propTypes = {
+  address: PropTypes.string.isRequired,
+  balance: PropTypes.number.isRequired,
+  balanceUnit: PropTypes.string.isRequired,
+  connectAccount: PropTypes.bool.isRequired
+};
 
 export default Navigation;
