@@ -31,9 +31,9 @@ function Navigation({
 
 Navigation.propTypes = {
   address: PropTypes.string.isRequired,
-  balance: PropTypes.number.isRequired,
+  balance: PropTypes.string.isRequired,
   balanceUnit: PropTypes.string.isRequired,
-  connectAccount: PropTypes.bool.isRequired
+  connectAccount: PropTypes.func.isRequired
 };
 
 export default Navigation;

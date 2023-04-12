@@ -39,7 +39,7 @@ function Token({
       return () => clearTimeout(timer);
     }
 
-    return null;
+    return undefined;
   }, [mintCooldown, setMintCooldown]);
 
   const mintButtonText = () => {

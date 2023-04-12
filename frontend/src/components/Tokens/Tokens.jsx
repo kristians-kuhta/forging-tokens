@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import Token from '../Token/Token';
 
 function Tokens({
-  contracts,
   collection,
   handleMint,
   handleForge,
@@ -23,7 +22,6 @@ function Tokens({
         <Token
           key={`token-${token.id}`}
           id={token.id}
-          contracts={contracts}
           name={token.name}
           description={token.description}
           image={token.image}
@@ -49,8 +47,18 @@ function Tokens({
 }
 
 Tokens.propTypes = {
-  contracts: PropTypes.objectOf(PropTypes.object()).isRequired,
-  collection: PropTypes.arrayOf(PropTypes.object()).isRequired,
+  collection: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      description: PropTypes.string.isRequired,
+      image: PropTypes.string.isRequired,
+      balance: PropTypes.number.isRequired,
+      canBeForged: PropTypes.bool.isRequired,
+      canBeBurned: PropTypes.bool.isRequired,
+      canBeTraded: PropTypes.bool.isRequired
+    })
+  ).isRequired,
   handleMint: PropTypes.func.isRequired,
   handleForge: PropTypes.func.isRequired,
   handleBurn: PropTypes.func.isRequired,

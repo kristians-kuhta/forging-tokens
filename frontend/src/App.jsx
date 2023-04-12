@@ -24,7 +24,7 @@ function App() {
   });
 
   const [provider, setProvider] = useState(null);
-  const [contracts, setContracts] = useState([]);
+  const [contracts, setContracts] = useState({});
 
   const connectAccount = useCallback(async () => {
     if (window.ethereum) {
@@ -33,7 +33,6 @@ function App() {
           method: 'eth_requestAccounts'
         });
         const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-
         const weiBalance = await web3Provider.getBalance(address);
         const balance = ethers.utils.formatEther(weiBalance);
 

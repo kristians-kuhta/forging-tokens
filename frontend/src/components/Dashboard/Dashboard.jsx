@@ -85,16 +85,15 @@ function Dashboard({
   );
 
   const buildToken = useCallback(
-    async (id, tokenURI) => {
+    async (id, tokenURIPromise) => {
       let data = { id };
-      if (!tokenURI) {
+      if (!tokenURIPromise) {
         return data;
       }
 
-      const ipfsURL = tokenURI
+      const ipfsURL = (await tokenURIPromise)
         .replace('ipfs://', IPFS_GATEWAY_PREFIX)
         .replace('{id}', id);
-      data.url = ipfsURL;
       const tokenData = (await axios.get(ipfsURL)).data;
       const { name, description, image } = tokenData;
 
@@ -122,7 +121,7 @@ function Dashboard({
 
   useEffect(() => {
     if (!contracts || !contracts.Forge) {
-      return;
+      return undefined;
     }
 
     try {
@@ -132,23 +131,23 @@ function Dashboard({
     } catch (error) {
       handleError(error);
     }
+    return undefined;
   }, [contracts, contracts.Forge, setMintCooldown]);
 
   useEffect(() => {
     if (!contracts || !contracts.Item) {
-      return;
+      return undefined;
     }
 
     (async () => {
-      const items = [];
+      let items = [];
       for (let tokenId = MIN_TOKEN_ID; tokenId <= MAX_TOKEN_ID; tokenId += 1) {
-        contracts.Item.uri(tokenId).then((tokenURI) => {
-          const token = buildToken(tokenId, tokenURI);
-          items.push(token);
-        });
+        const tokenURIPromise = contracts.Item.uri(tokenId);
+        items.push(buildToken(tokenId, tokenURIPromise));
       }
       setCollection(await Promise.all(items));
     })();
+    return undefined;
   }, [contracts, contracts.Item, buildToken]);
 
   const updateTokens = async () => {
@@ -227,7 +226,6 @@ function Dashboard({
       <>
         {errorMessage && <ErrorMessage text={errorMessage} />}
         <Tokens
-          contracts={contracts}
           collection={collection}
           handleMint={handleMint}
           handleForge={handleForge}
@@ -246,11 +244,25 @@ function Dashboard({
   return <p>Please, switch to Polygon Mumbai testnet to use the app!</p>;
 }
 
+Dashboard.defaultProps = { provider: null };
+
 Dashboard.propTypes = {
   walletAddress: PropTypes.string.isRequired,
-  provider: PropTypes.objectOf(PropTypes.object()).isRequired,
+  provider: PropTypes.shape({}),
   isCorrectChain: PropTypes.bool.isRequired,
-  contracts: PropTypes.objectOf(PropTypes.object()).isRequired,
+  contracts: PropTypes.shape({
+    Item: PropTypes.shape({
+      balanceOf: PropTypes.func.isRequired,
+      uri: PropTypes.func.isRequired
+    }),
+    Forge: PropTypes.shape({
+      mint: PropTypes.func.isRequired,
+      forge: PropTypes.func.isRequired,
+      burn: PropTypes.func.isRequired,
+      trade: PropTypes.func.isRequired,
+      mintCooldown: PropTypes.func.isRequired,
+    }),
+  }).isRequired,
 };
 
 export default Dashboard;
