@@ -26,7 +26,7 @@ describe("Item", function () {
     it("set the uri", async function () {
       const { item } = await loadFixture(deployToken);
 
-      await expect(await item['uri()']()).to.equal("ipfs://QmUSuYPXx3nxPaCJcvcNPuEMShzPpuDLGhnDmmtmJn4EJs/{id}");
+      await expect(await item.uri(777)).to.equal("ipfs://QmUSuYPXx3nxPaCJcvcNPuEMShzPpuDLGhnDmmtmJn4EJs/777");
     });
 
     it("deploys an instance of Forge contract", async function () {
@@ -39,6 +39,14 @@ describe("Item", function () {
       const { item, forge } = await loadFixture(deployToken);
 
       await expect(await forge.item()).to.equal(item.address);
+    });
+  });
+
+  describe("Contract information", function () {
+    it("returns the contract uri", async () => {
+      const { item, forge } = await loadFixture(deployToken);
+
+      expect(await item.contractURI()).to.equal("ipfs://QmfBi7Gf2M9wLdC41aKKcncS2ns6nVgmffNAF3sFRnubqi");
     });
   });
 
