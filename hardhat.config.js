@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomiclabs/hardhat-etherscan");
+require("@nomiclabs/hardhat-solhint");
 
 const INFURA_API_KEY = process.env.INFURA_API_KEY;
 const ACCOUNT_PRIVATE_KEY = process.env.ACCOUNT_PRIVATE_KEY;
