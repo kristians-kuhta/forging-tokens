@@ -5,6 +5,7 @@
       "error",
       { "ignoreConstructors": true }
     ],
-    "compiler-version": ["error","0.8.19"]
+    "compiler-version": ["error","0.8.19"],
+    "no-global-import": "off"
   }
 }
