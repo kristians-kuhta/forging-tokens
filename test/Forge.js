@@ -31,41 +31,41 @@ describe("Forge", function () {
   });
 
   describe("Minting", function () {
-    it("reverts if trying to mint a token that cannot be minted", async function() {
+    it("reverts if trying to mint a token that cannot be minted", async function () {
       const { item, forge } = await loadFixture(deployToken);
 
-      await expect(forge.mint(3)).to.be.revertedWithCustomError(forge, "TokenIdCannotBeMinted");
+      await expect(forge.mint(3)).to.be.revertedWithCustomError(
+        forge,
+        "TokenIdCannotBeMinted"
+      );
     });
 
-    it("reverts if address is on mint cooldown", async function() {
+    it("reverts if address is on mint cooldown", async function () {
       const { item, forge } = await loadFixture(deployToken);
 
-      const blockTimestamp = await time.latest() + 1;
+      const blockTimestamp = (await time.latest()) + 1;
       await time.setNextBlockTimestamp(blockTimestamp);
 
       await forge.mint(0);
       const newBlockTimestamp = blockTimestamp + 57; // 57 seconds after mint
       await time.setNextBlockTimestamp(newBlockTimestamp);
 
-      await expect(
-        forge.mint(1)
-      ).to.be.revertedWithCustomError(
-        forge,
-        "AddressOnMintCooldown"
-      ).withArgs(3);
+      await expect(forge.mint(1))
+        .to.be.revertedWithCustomError(forge, "AddressOnMintCooldown")
+        .withArgs(3);
     });
 
-    it("returns the mint cooldown in seconds", async function() {
+    it("returns the mint cooldown in seconds", async function () {
       const { item, forge } = await loadFixture(deployToken);
 
       // Mint cooldown in seconds
       await expect(await forge.MINT_COOLDOWN()).to.equal(60);
     });
 
-    it("mints a token for the caller just after the mint cooldown has ended", async function() {
+    it("mints a token for the caller just after the mint cooldown has ended", async function () {
       const { forge } = await loadFixture(deployToken);
 
-      const blockTimestamp = await time.latest() + 1;
+      const blockTimestamp = (await time.latest()) + 1;
 
       await forge.mint(0);
       const newBlockTimestamp = blockTimestamp + 60; // 61 seconds after mint
@@ -74,13 +74,13 @@ describe("Forge", function () {
       await expect(forge.mint(1)).not.to.be.reverted;
     });
 
-    it("returns false when asking if address that has not minted before is on mint cooldown", async function() {
+    it("returns false when asking if address that has not minted before is on mint cooldown", async function () {
       const { forge } = await loadFixture(deployToken);
 
       expect(await forge.mintCooldown()).to.equal(false);
     });
 
-    it("returns true when asking if address that just minted is on mint cooldown", async function() {
+    it("returns true when asking if address that just minted is on mint cooldown", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await forge.mint(0);
@@ -88,67 +88,67 @@ describe("Forge", function () {
       expect(await forge.mintCooldown()).to.equal(true);
     });
 
-    it("returns false when asking if address that minted 61 seconds ago is on mint cooldown", async function() {
+    it("returns false when asking if address that minted 61 seconds ago is on mint cooldown", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await forge.mint(0);
 
-      await time.increaseTo(await time.latest() + 61);
+      await time.increaseTo((await time.latest()) + 61);
 
       expect(await forge.mintCooldown()).to.equal(false);
     });
   });
 
   describe("Forging", function () {
-    it("reverts if trying to forge token with id of 2", async function() {
+    it("reverts if trying to forge token with id of 2", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await expect(forge.forge(2)).to.be.reverted;
     });
 
-    it("reverts if trying to forge token with id of 7", async function() {
+    it("reverts if trying to forge token with id of 7", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await expect(forge.forge(7)).to.be.reverted;
     });
 
-    it("forges token with id of 3", async function() {
+    it("forges token with id of 3", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await (await forge.mint(0)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
       await (await forge.mint(1)).wait();
 
       await expect(forge.forge(3)).not.to.be.reverted;
     });
 
-    it("forges token with id of 4", async function() {
+    it("forges token with id of 4", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await (await forge.mint(1)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
       await (await forge.mint(2)).wait();
 
       await expect(forge.forge(4)).not.to.be.reverted;
     });
 
-    it("forges token with id of 5", async function() {
+    it("forges token with id of 5", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await (await forge.mint(0)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
       await (await forge.mint(2)).wait();
 
       await expect(forge.forge(5)).not.to.be.reverted;
     });
 
-    it("forges token with id of 6", async function() {
+    it("forges token with id of 6", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await (await forge.mint(0)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
       await (await forge.mint(1)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
       await (await forge.mint(2)).wait();
 
       await expect(forge.forge(6)).not.to.be.reverted;
@@ -156,23 +156,26 @@ describe("Forge", function () {
   });
 
   describe("Burning", function () {
-    it("reverts if trying to burn token with id of 3", async function() {
+    it("reverts if trying to burn token with id of 3", async function () {
       const { forge } = await loadFixture(deployToken);
 
       await (await forge.mint(0)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
       await (await forge.mint(1)).wait();
 
       await (await forge.forge(3)).wait();
 
-      await expect(forge.burn(3)).to.be.revertedWithCustomError(forge, "TokenCannotBeBurned");
+      await expect(forge.burn(3)).to.be.revertedWithCustomError(
+        forge,
+        "TokenCannotBeBurned"
+      );
     });
 
-    it("burns a token with id of 4", async function() {
+    it("burns a token with id of 4", async function () {
       const { forge, item, firstAccount } = await loadFixture(deployToken);
 
       await (await forge.mint(1)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
       await (await forge.mint(2)).wait();
 
       await (await forge.forge(4)).wait();
@@ -183,17 +186,17 @@ describe("Forge", function () {
   });
 
   describe("Trading", function () {
-    it("reverts if trying to trade from/to the same token ID", async function() {
+    it("reverts if trying to trade from/to the same token ID", async function () {
       const { forge } = await loadFixture(deployToken);
 
-      await expect(forge.trade(1,1)).to.be.reverted;
+      await expect(forge.trade(1, 1)).to.be.reverted;
     });
 
-    it("burns a token when trying to trade from a token with ID of 3", async function() {
+    it("burns a token when trying to trade from a token with ID of 3", async function () {
       const { forge, item, firstAccount } = await loadFixture(deployToken);
 
       await (await forge.mint(0)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
       await (await forge.mint(1)).wait();
 
       await (await forge.forge(3)).wait();
@@ -202,11 +205,11 @@ describe("Forge", function () {
       expect(await item.balanceOf(firstAccount.address, 3)).to.equal(0);
     });
 
-    it("trades a token when trading from token ID 1 to 2", async function() {
+    it("trades a token when trading from token ID 1 to 2", async function () {
       const { forge, item, firstAccount } = await loadFixture(deployToken);
 
       await (await forge.mint(1)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
 
       await (await forge.trade(1, 2)).wait();
 
@@ -214,11 +217,11 @@ describe("Forge", function () {
       expect(await item.balanceOf(firstAccount.address, 2)).to.equal(1);
     });
 
-    it("reverts when trading from token ID 2 to 4", async function() {
+    it("reverts when trading from token ID 2 to 4", async function () {
       const { forge, item, firstAccount } = await loadFixture(deployToken);
 
       await (await forge.mint(2)).wait();
-      await time.setNextBlockTimestamp(await time.latest() + 61);
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
 
       await expect(forge.trade(2, 4)).to.be.reverted;
     });

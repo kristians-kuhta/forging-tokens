@@ -26,13 +26,17 @@ describe("Item", function () {
     it("set the uri", async function () {
       const { item } = await loadFixture(deployToken);
 
-      await expect(await item.uri(777)).to.equal("ipfs://QmUSuYPXx3nxPaCJcvcNPuEMShzPpuDLGhnDmmtmJn4EJs/777");
+      await expect(await item.uri(777)).to.equal(
+        "ipfs://QmUSuYPXx3nxPaCJcvcNPuEMShzPpuDLGhnDmmtmJn4EJs/777"
+      );
     });
 
     it("deploys an instance of Forge contract", async function () {
       const { item } = await loadFixture(deployToken);
 
-      await expect(await item.forge()).not.to.equal(ethers.constants.AddressZero);
+      await expect(await item.forge()).not.to.equal(
+        ethers.constants.AddressZero
+      );
     });
 
     it("deploys forge with the item address as an argument", async function () {
@@ -46,7 +50,9 @@ describe("Item", function () {
     it("returns the contract uri", async () => {
       const { item, forge } = await loadFixture(deployToken);
 
-      expect(await item.contractURI()).to.equal("ipfs://QmfBi7Gf2M9wLdC41aKKcncS2ns6nVgmffNAF3sFRnubqi");
+      expect(await item.contractURI()).to.equal(
+        "ipfs://QmfBi7Gf2M9wLdC41aKKcncS2ns6nVgmffNAF3sFRnubqi"
+      );
     });
   });
 
@@ -70,14 +76,16 @@ describe("Item", function () {
       await network.provider.request({
         method: "hardhat_setBalance",
         // 1 ether
-        params: [forge.address, "0xde0b6b3a7640000"]
+        params: [forge.address, "0xde0b6b3a7640000"],
       });
 
       const forgeSigner = await ethers.getSigner(forge.address);
 
       await item.connect(forgeSigner).mint(1234, firstAccount.address);
 
-      await expect(await item.balanceOf(firstAccount.address, 1234)).to.equal(1);
+      await expect(await item.balanceOf(firstAccount.address, 1234)).to.equal(
+        1
+      );
     });
   });
 
@@ -101,7 +109,7 @@ describe("Item", function () {
       await network.provider.request({
         method: "hardhat_setBalance",
         // 1 ether
-        params: [forge.address, "0xde0b6b3a7640000"]
+        params: [forge.address, "0xde0b6b3a7640000"],
       });
 
       const forgeSigner = await ethers.getSigner(forge.address);
@@ -110,7 +118,9 @@ describe("Item", function () {
 
       await item.connect(forgeSigner).burn(firstAccount.address, 1234, 1);
 
-      await expect(await item.balanceOf(firstAccount.address, 1234)).to.equal(0);
+      await expect(await item.balanceOf(firstAccount.address, 1234)).to.equal(
+        0
+      );
     });
   });
 });
