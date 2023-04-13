@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol" as ERC1155;
-import "./Item.sol" as Item;
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "./Item.sol";
 
 contract Forge {
     uint256 public constant MINT_COOLDOWN = 1 minutes;
