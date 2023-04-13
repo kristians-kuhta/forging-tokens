@@ -1,6 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-solhint");
+require("hardhat-gas-reporter");
 
 const INFURA_API_KEY = process.env.INFURA_API_KEY;
 const ACCOUNT_PRIVATE_KEY = process.env.ACCOUNT_PRIVATE_KEY;
@@ -8,7 +9,7 @@ const ETHERSCAN_API_KEY= process.env.ETHERSCAN_API_KEY;
 
 /** @type import('hardhat/config').HardhatUserConfig */
 
-const config = buildConfig();
+const networksConfig = buildConfig();
 
 function buildConfig() {
   let networks = {}
@@ -37,5 +38,8 @@ function buildConfig() {
 
 module.exports = {
   solidity: "0.8.19",
-  ...config
+  ...networksConfig,
+  gasReporter: {
+    enabled: true
+  }
 };
