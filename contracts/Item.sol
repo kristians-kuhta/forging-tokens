@@ -17,7 +17,7 @@ contract Item is ERC1155 {
         forge = new Forge(address(this));
     }
 
-    function contractURI() public pure returns (string memory) {
+    function contractURI() external pure returns (string memory) {
         return "ipfs://QmfBi7Gf2M9wLdC41aKKcncS2ns6nVgmffNAF3sFRnubqi";
     }
 
@@ -44,7 +44,7 @@ contract Item is ERC1155 {
         _mint(_receiver, _tokenId, 1, "");
     }
 
-    function burn(address _holder, uint256 _tokenId, uint256 _amount) public {
+    function burn(address _holder, uint256 _tokenId, uint256 _amount) external {
         _onlyForge();
         _burn(_holder, _tokenId, _amount);
     }

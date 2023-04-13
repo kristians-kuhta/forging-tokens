@@ -21,26 +21,26 @@ contract Forge {
     }
 
     //
-    // Public functions
+    // Public facing functions
     //
 
-    function mint(uint256 _tokenId) public {
+    function mint(uint256 _tokenId) external {
         _checkTokenCanBeMinted(_tokenId);
         _checkAddressOnMintCooldown();
         lastMint[msg.sender] = block.timestamp;
         item.mint(_tokenId, msg.sender);
     }
 
-    function forge(uint256 _tokenId) public {
+    function forge(uint256 _tokenId) external {
         _forge(_tokenId);
     }
 
-    function burn(uint256 _tokenId) public {
+    function burn(uint256 _tokenId) external {
         _checkTokenCanBeBurned(_tokenId);
         item.burn(msg.sender, _tokenId, 1);
     }
 
-    function trade(uint256 _fromTokenId, uint256 _toTokenId) public {
+    function trade(uint256 _fromTokenId, uint256 _toTokenId) external {
         require(_fromTokenId != _toTokenId, "From/to token IDs must differ");
 
         if (_fromTokenId > 2) {
@@ -53,7 +53,7 @@ contract Forge {
         }
     }
 
-    function mintCooldown() public view returns (bool) {
+    function mintCooldown() external view returns (bool) {
         return _addressOnMintCooldown(msg.sender);
     }
 
