@@ -61,10 +61,6 @@ contract Forge {
     //  Internal functions
     //
 
-    function _canTradeToken(uint256 _tokenId) internal view returns (bool) {
-        return _tokenId < 3 && item.balanceOf(msg.sender, _tokenId) > 0;
-    }
-
     function _addressOnMintCooldown(
         address _account
     ) internal view returns (bool) {
@@ -76,12 +72,6 @@ contract Forge {
     function _checkTokenCanBeMinted(uint256 _tokenId) internal pure {
         if (_tokenId > 2) {
             revert TokenIdCannotBeMinted();
-        }
-    }
-
-    function _checkTokenCanBeTraded(uint256 _tokenId) internal view {
-        if (!_canTradeToken(_tokenId)) {
-            revert TokenCannotBeTraded();
         }
     }
 
