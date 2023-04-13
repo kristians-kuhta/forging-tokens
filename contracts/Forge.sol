@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "./Item.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol" as ERC1155;
+import "./Item.sol" as Item;
 
 contract Forge {
     uint256 public constant MINT_COOLDOWN = 1 minutes;
@@ -41,7 +41,7 @@ contract Forge {
     }
 
     function trade(uint256 _fromTokenId, uint256 _toTokenId) public {
-        require(_fromTokenId != _toTokenId);
+        require(_fromTokenId != _toTokenId, "From/to token IDs must differ");
 
         if (_fromTokenId > 2) {
             item.burn(msg.sender, _fromTokenId, 1);
@@ -49,7 +49,7 @@ contract Forge {
             item.burn(msg.sender, _fromTokenId, 1);
             item.mint(_toTokenId, msg.sender);
         } else {
-            revert();
+            revert("Token IDs cannot be traded");
         }
     }
 
@@ -99,7 +99,7 @@ contract Forge {
         } else if (_tokenId == 6) {
             _mintOneBurnThree(_tokenId, 0, 1, 2);
         } else {
-            revert();
+            revert("Token ID cannot be forged");
         }
     }
 

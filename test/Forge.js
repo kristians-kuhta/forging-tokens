@@ -103,13 +103,13 @@ describe("Forge", function () {
     it("reverts if trying to forge token with id of 2", async function () {
       const { forge } = await loadFixture(deployToken);
 
-      await expect(forge.forge(2)).to.be.reverted;
+      await expect(forge.forge(2)).to.be.revertedWith('Token ID cannot be forged');
     });
 
     it("reverts if trying to forge token with id of 7", async function () {
       const { forge } = await loadFixture(deployToken);
 
-      await expect(forge.forge(7)).to.be.reverted;
+      await expect(forge.forge(7)).to.be.revertedWith('Token ID cannot be forged');
     });
 
     it("forges token with id of 3", async function () {
@@ -189,7 +189,7 @@ describe("Forge", function () {
     it("reverts if trying to trade from/to the same token ID", async function () {
       const { forge } = await loadFixture(deployToken);
 
-      await expect(forge.trade(1, 1)).to.be.reverted;
+      await expect(forge.trade(1, 1)).to.be.revertedWith('From/to token IDs must differ');
     });
 
     it("burns a token when trying to trade from a token with ID of 3", async function () {
@@ -223,7 +223,7 @@ describe("Forge", function () {
       await (await forge.mint(2)).wait();
       await time.setNextBlockTimestamp((await time.latest()) + 61);
 
-      await expect(forge.trade(2, 4)).to.be.reverted;
+      await expect(forge.trade(2, 4)).to.be.revertedWith('Token IDs cannot be traded');
     });
   });
 });

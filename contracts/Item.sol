@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol" as ERC1155;
+import "@openzeppelin/contracts/utils/Strings.sol" as Strings;
 
-import "./Forge.sol";
+import "./Forge.sol" as Forge;
 
 contract Item is ERC1155 {
     error OnlyForgeCanPerformAction();
