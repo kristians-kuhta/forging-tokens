@@ -10,14 +10,11 @@ const ETHERSCAN_API_KEY= process.env.ETHERSCAN_API_KEY;
 const config = buildConfig();
 
 function buildConfig() {
-  let networks = {
-    hardhat: {
-      mining: {
-        auto: false,
-        interval: 5000
-      }
-    },
-  };
+  let networks = {}
+
+  if (process.env.NODE_ENV != 'test') {
+    networks.hardhat = { mining: { auto: false, interval: 5000 } };
+  }
 
   if (INFURA_API_KEY) {
     networks.sepolia = {
