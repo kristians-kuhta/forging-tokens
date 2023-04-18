@@ -1,7 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-solhint");
-require("hardhat-gas-reporter");
 
 const INFURA_API_KEY = process.env.INFURA_API_KEY;
 const ACCOUNT_PRIVATE_KEY = process.env.ACCOUNT_PRIVATE_KEY;
@@ -38,8 +37,5 @@ function buildConfig() {
 
 module.exports = {
   solidity: "0.8.19",
-  ...networksConfig,
-  gasReporter: {
-    enabled: true
-  }
+  ...networksConfig
 };
