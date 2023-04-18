@@ -63,15 +63,36 @@ describe("Forge", function () {
     });
 
     it("mints a token for the caller just after the mint cooldown has ended", async function () {
-      const { forge } = await loadFixture(deployToken);
+      const { forge, item, firstAccount } = await loadFixture(deployToken);
 
       const blockTimestamp = (await time.latest()) + 1;
 
-      await forge.mint(0);
+      await expect(
+        forge.mint(0)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        0, // tokenId
+        1 // amount
+      );
+
+      expect(await item.balanceOf(firstAccount.address, 0)).to.equal(1);
+
       const newBlockTimestamp = blockTimestamp + 60; // 61 seconds after mint
       await time.setNextBlockTimestamp(newBlockTimestamp);
 
-      await expect(forge.mint(1)).not.to.be.reverted;
+      await expect(
+        forge.mint(1)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        1, // tokenId
+        1 // amount
+      );
+
+      expect(await item.balanceOf(firstAccount.address, 1)).to.equal(1);
     });
 
     it("returns false when asking if address that has not minted before is on mint cooldown", async function () {
@@ -113,45 +134,214 @@ describe("Forge", function () {
     });
 
     it("forges token with id of 3", async function () {
-      const { forge } = await loadFixture(deployToken);
+      const { forge, item, firstAccount } = await loadFixture(deployToken);
 
-      await (await forge.mint(0)).wait();
+      await expect(
+        forge.mint(0)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        0, // tokenId
+        1 // amount
+      );
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
-      await (await forge.mint(1)).wait();
 
-      await expect(forge.forge(3)).not.to.be.reverted;
+      await expect(
+        forge.mint(1)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        1, // tokenId
+        1 // amount
+      );
+
+      await expect(
+        forge.forge(3)
+      // Expect minted token event
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        3, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        0, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        1, // tokenId
+        1 // amount
+      );
     });
 
     it("forges token with id of 4", async function () {
-      const { forge } = await loadFixture(deployToken);
+      const { forge, item, firstAccount } = await loadFixture(deployToken);
 
-      await (await forge.mint(1)).wait();
+      await expect(
+        forge.mint(1)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        1, // tokenId
+        1 // amount
+      );
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
-      await (await forge.mint(2)).wait();
 
-      await expect(forge.forge(4)).not.to.be.reverted;
+      await expect(
+        forge.mint(2)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        2, // tokenId
+        1 // amount
+      );
+
+      await expect(
+        forge.forge(4)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        4, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        1, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        2, // tokenId
+        1 // amount
+      );
     });
 
     it("forges token with id of 5", async function () {
-      const { forge } = await loadFixture(deployToken);
+      const { forge, item, firstAccount } = await loadFixture(deployToken);
 
-      await (await forge.mint(0)).wait();
+      await expect(
+        forge.mint(0)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        0, // tokenId
+        1 // amount
+      );
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
-      await (await forge.mint(2)).wait();
 
-      await expect(forge.forge(5)).not.to.be.reverted;
+      await expect(
+        forge.mint(2)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        2, // tokenId
+        1 // amount
+      );
+
+      await expect(
+        forge.forge(5)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        5, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        0, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        2, // tokenId
+        1 // amount
+      );
     });
 
     it("forges token with id of 6", async function () {
-      const { forge } = await loadFixture(deployToken);
+      const { forge, item, firstAccount } = await loadFixture(deployToken);
 
-      await (await forge.mint(0)).wait();
-      await time.setNextBlockTimestamp((await time.latest()) + 61);
-      await (await forge.mint(1)).wait();
-      await time.setNextBlockTimestamp((await time.latest()) + 61);
-      await (await forge.mint(2)).wait();
+      await expect(
+        forge.mint(0)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        0, // tokenId
+        1 // amount
+      );
 
-      await expect(forge.forge(6)).not.to.be.reverted;
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
+
+      await expect(
+        forge.mint(1)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        1, // tokenId
+        1 // amount
+      );
+
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
+
+      await expect(
+        forge.mint(2)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        2, // tokenId
+        1 // amount
+      );
+
+      await expect(
+        forge.forge(6)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        6, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        0, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        1, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        2, // tokenId
+        1 // amount
+      );
     });
   });
 
