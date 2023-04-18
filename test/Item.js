@@ -81,7 +81,15 @@ describe("Item", function () {
 
       const forgeSigner = await ethers.getSigner(forge.address);
 
-      await item.connect(forgeSigner).mint(1234, firstAccount.address);
+      await expect(
+        item.connect(forgeSigner).mint(1234, firstAccount.address)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forgeSigner.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        1234,
+        1
+      );
 
       await expect(await item.balanceOf(firstAccount.address, 1234)).to.equal(
         1
@@ -116,11 +124,17 @@ describe("Item", function () {
 
       await item.connect(forgeSigner).mint(1234, firstAccount.address);
 
-      await item.connect(forgeSigner).burn(firstAccount.address, 1234, 1);
-
-      await expect(await item.balanceOf(firstAccount.address, 1234)).to.equal(
-        0
+      await expect(
+        item.connect(forgeSigner).burn(firstAccount.address, 1234, 1)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forgeSigner.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        1234,
+        1
       );
+
+      expect(await item.balanceOf(firstAccount.address, 1234)).to.equal(0);
     });
   });
 });
