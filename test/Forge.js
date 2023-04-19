@@ -184,6 +184,7 @@ describe("Forge", function () {
         1, // tokenId
         1 // amount
       );
+
       expect(await item.balanceOf(firstAccount.address, 0)).to.equal(0);
       expect(await item.balanceOf(firstAccount.address, 1)).to.equal(0);
       expect(await item.balanceOf(firstAccount.address, 3)).to.equal(1);
@@ -381,13 +382,52 @@ describe("Forge", function () {
 
   describe("Burning", function () {
     it("reverts if trying to burn token with id of 3", async function () {
-      const { forge } = await loadFixture(deployToken);
+      const { forge, item, firstAccount } = await loadFixture(deployToken);
 
-      await (await forge.mint(0)).wait();
+      await expect(
+        forge.mint(0)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        0, // tokenId
+        1 // amount
+      );
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
-      await (await forge.mint(1)).wait();
 
-      await (await forge.forge(3)).wait();
+      await expect(
+        forge.mint(1)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        1, // tokenId
+        1 // amount
+      );
+
+      await expect(
+        forge.forge(3)
+      // Expect minted token event
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        3, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        0, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        1, // tokenId
+        1 // amount
+      );
 
       await expect(forge.burn(3)).to.be.revertedWithCustomError(
         forge,
@@ -398,12 +438,60 @@ describe("Forge", function () {
     it("burns a token with id of 4", async function () {
       const { forge, item, firstAccount } = await loadFixture(deployToken);
 
-      await (await forge.mint(1)).wait();
-      await time.setNextBlockTimestamp((await time.latest()) + 61);
-      await (await forge.mint(2)).wait();
+      await expect(
+        forge.mint(1)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        1, // tokenId
+        1 // amount
+      );
 
-      await (await forge.forge(4)).wait();
-      await (await forge.burn(4)).wait();
+      await time.setNextBlockTimestamp((await time.latest()) + 61);
+
+      await expect(
+        forge.mint(2)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        2, // tokenId
+        1 // amount
+      );
+
+      await expect(
+        forge.forge(4)
+      // Expect minted token event
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        ethers.constants.AddressZero,
+        firstAccount.address,
+        4, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        1, // tokenId
+        1 // amount
+      ).and.to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        2, // tokenId
+        1 // amount
+      );
+
+      await expect(
+        forge.burn(4)
+      ).to.emit(item, "TransferSingle").withArgs(
+        forge.address,
+        firstAccount.address,
+        ethers.constants.AddressZero,
+        4, // tokenId
+        1 // amount
+      );
 
       expect(await item.balanceOf(firstAccount.address, 4)).to.equal(0);
     });
