@@ -146,6 +146,8 @@ describe("Forge", function () {
         1 // amount
       );
 
+      expect(await item.balanceOf(firstAccount.address, 0)).to.equal(1);
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
 
       await expect(
@@ -157,6 +159,8 @@ describe("Forge", function () {
         1, // tokenId
         1 // amount
       );
+
+      expect(await item.balanceOf(firstAccount.address, 1)).to.equal(1);
 
       await expect(
         forge.forge(3)
@@ -180,6 +184,9 @@ describe("Forge", function () {
         1, // tokenId
         1 // amount
       );
+      expect(await item.balanceOf(firstAccount.address, 0)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 1)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 3)).to.equal(1);
     });
 
     it("forges token with id of 4", async function () {
@@ -195,6 +202,8 @@ describe("Forge", function () {
         1 // amount
       );
 
+      expect(await item.balanceOf(firstAccount.address, 1)).to.equal(1);
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
 
       await expect(
@@ -206,6 +215,8 @@ describe("Forge", function () {
         2, // tokenId
         1 // amount
       );
+
+      expect(await item.balanceOf(firstAccount.address, 2)).to.equal(1);
 
       await expect(
         forge.forge(4)
@@ -228,6 +239,10 @@ describe("Forge", function () {
         2, // tokenId
         1 // amount
       );
+
+      expect(await item.balanceOf(firstAccount.address, 1)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 2)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 4)).to.equal(1);
     });
 
     it("forges token with id of 5", async function () {
@@ -243,6 +258,8 @@ describe("Forge", function () {
         1 // amount
       );
 
+      expect(await item.balanceOf(firstAccount.address, 0)).to.equal(1);
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
 
       await expect(
@@ -254,6 +271,8 @@ describe("Forge", function () {
         2, // tokenId
         1 // amount
       );
+
+      expect(await item.balanceOf(firstAccount.address, 2)).to.equal(1);
 
       await expect(
         forge.forge(5)
@@ -276,6 +295,10 @@ describe("Forge", function () {
         2, // tokenId
         1 // amount
       );
+
+      expect(await item.balanceOf(firstAccount.address, 0)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 2)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 5)).to.equal(1);
     });
 
     it("forges token with id of 6", async function () {
@@ -291,6 +314,8 @@ describe("Forge", function () {
         1 // amount
       );
 
+      expect(await item.balanceOf(firstAccount.address, 0)).to.equal(1);
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
 
       await expect(
@@ -303,6 +328,8 @@ describe("Forge", function () {
         1 // amount
       );
 
+      expect(await item.balanceOf(firstAccount.address, 1)).to.equal(1);
+
       await time.setNextBlockTimestamp((await time.latest()) + 61);
 
       await expect(
@@ -314,6 +341,8 @@ describe("Forge", function () {
         2, // tokenId
         1 // amount
       );
+
+      expect(await item.balanceOf(firstAccount.address, 2)).to.equal(1);
 
       await expect(
         forge.forge(6)
@@ -342,6 +371,11 @@ describe("Forge", function () {
         2, // tokenId
         1 // amount
       );
+
+      expect(await item.balanceOf(firstAccount.address, 0)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 1)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 2)).to.equal(0);
+      expect(await item.balanceOf(firstAccount.address, 6)).to.equal(1);
     });
   });
 
